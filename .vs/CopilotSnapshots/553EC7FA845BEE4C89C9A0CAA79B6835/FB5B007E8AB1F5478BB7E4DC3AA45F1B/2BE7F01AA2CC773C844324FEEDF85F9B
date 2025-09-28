@@ -1,0 +1,17 @@
+﻿using MilkTeaShop.Domain.Interfaces;
+using MilkTeaShop.Domain.ValueObjects;
+
+namespace MilkTeaShop.Domain.Entities;
+
+public class OrderItem
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public IPriceable Drink { get; set; }
+    public SizeOption Size { get; set; } = SizeOption.Medium;
+    public int Quantity { get; set; } = 1;
+
+    public OrderItem(IPriceable drink) => Drink = drink;
+
+    public decimal LineTotal() => Drink.GetPrice() * Quantity;
+    public override string ToString() => $"{Quantity}x {Drink.GetDescription()} ({Size}) - {LineTotal():0,0}";
+}

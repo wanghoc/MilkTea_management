@@ -1,0 +1,71 @@
+﻿using MilkTeaShop.Domain.Interfaces;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.Patterns.Decorator;
+
+namespace MilkTeaShop.Domain.Factories;
+
+public static class DrinkFactory
+{
+    // Dictionary để map từ tên món sang decorator type
+    private static readonly Dictionary<string, Func<IPriceable, IPriceable>> MilkTeaDecorators = new()
+    {
+        ["Trà sữa nguyên chất"] = drink => new OriginalMilkTeaDecorator(drink),
+        ["Trà sữa chocolate"] = drink => new ChocolateMilkTeaDecorator(drink),
+        ["Trà sữa dâu"] = drink => new StrawberryMilkTeaDecorator(drink),
+        ["Trà sữa khoai môn"] = drink => new TaroMilkTeaDecorator(drink),
+        ["Trà sữa matcha"] = drink => new MatchaMilkTeaDecorator(drink),
+        ["Trà sữa đường đen"] = drink => new BrownSugarMilkTeaDecorator(drink),
+        ["Trà sữa kem cheese"] = drink => new CreamCheeseMilkTeaDecorator(drink),
+        ["Trà sữa socola"] = drink => new CocoaMilkTeaDecorator(drink),
+        ["Trà sữa hokkaido"] = drink => new HokkaidoMilkTeaDecorator(drink),
+        ["Trà sữa okinawa"] = drink => new OkinawaMilkTeaDecorator(drink)
+    };
+
+    private static readonly Dictionary<string, Func<IPriceable, IPriceable>> ToppingDecorators = new()
+    {
+        ["Trân châu đen"] = drink => new BlackPearlTopping(drink),
+        ["Trân châu trắng"] = drink => new WhitePearlTopping(drink),
+        ["Trân châu hoàng kim"] = drink => new GoldenPearlTopping(drink),
+        ["Pudding"] = drink => new PuddingTopping(drink),
+        ["Thạch cà phê"] = drink => new CoffeeJellyTopping(drink),
+        ["Thạch dừa"] = drink => new CoconutJellyTopping(drink),
+        ["Kem cheese"] = drink => new CreamCheeseTopping(drink),
+        ["Đậu đỏ"] = drink => new RedBeanTopping(drink),
+        ["Hạt chia"] = drink => new ChiaSeedTopping(drink),
+        ["Jelly"] = drink => new ColorfulJellyTopping(drink)
+    };
+
+    public static IPriceable CreateMilkTea(string milkTeaName)
+    {
+        var baseDrink = new BaseDrink();
+        
+        if (MilkTeaDecorators.TryGetValue(milkTeaName, out var decoratorFunc))
+        {
+            return decoratorFunc(baseDrink);
+        }
+        
+        throw new ArgumentException($"Unknown milk tea: {milkTeaName}");
+    }
+
+    public static IPriceable AddTopping(IPriceable drink, string toppingName)
+    {
+        if (ToppingDecorators.TryGetValue(toppingName, out var decoratorFunc))
+        {
+            return decoratorFunc(drink);
+        }
+        
+        throw new ArgumentException($"Unknown topping: {toppingName}");
+    }
+
+    public static IPriceable CreateDrinkWithToppings(string milkTeaName, List<string> toppingNames)
+    {
+        var drink = CreateMilkTea(milkTeaName);
+        
+        foreach (var topping in toppingNames)
+        {
+            drink = AddTopping(drink, topping);
+        }
+        
+        return drink;
+    }
+}

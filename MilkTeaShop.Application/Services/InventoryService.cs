@@ -1,0 +1,10 @@
+namespace MilkTeaShop.Application.Services;
+
+public class InventoryService
+{
+    // TODO: implement inventory deduction after payment
+    public void OnOrderPaid(string orderId)
+    {
+        // placeholder
+    }
+}

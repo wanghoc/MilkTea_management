@@ -1,0 +1,363 @@
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Domain.Interfaces;
+using MilkTeaShop.Domain.Factories;
+using MilkTeaShop.Domain.Data;
+using MilkTeaShop.Application.Services;
+
+namespace MilkTeaShop.Presentation.ViewModels;
+
+public class MainPOSViewModel : BaseViewModel
+{
+    private readonly IMenuService _menuService;
+    private readonly IReceiptService _receiptService;
+    
+    private Order _currentOrder = new();
+    private MenuItem? _selectedMilkTea;
+    private readonly List<MenuItem> _selectedToppings = new();
+    private int _selectedTabIndex = 0;
+    private string _customerNote = "";
+    private string _selectedSugarLevel = "100%";
+    private string _selectedIceLevel = "100%";
+    private SizeOption _selectedSize = SizeOption.Medium;
+    private int _quantity = 1;
+
+    public ObservableCollection<MenuItem> MilkTeaItems { get; } = new();
+    public ObservableCollection<MenuItem> ToppingItems { get; } = new();
+    public ObservableCollection<OrderItem> CartItems { get; } = new();
+    public ObservableCollection<MenuItem> SelectedToppings { get; } = new();
+    public ObservableCollection<string> SugarLevels { get; } = new() { "0%", "25%", "50%", "75%", "100%" };
+    public ObservableCollection<string> IceLevels { get; } = new() { "0%", "25%", "50%", "75%", "100%" };
+    public ObservableCollection<SizeOption> Sizes { get; } = new() { SizeOption.Small, SizeOption.Medium, SizeOption.Large };
+
+    public RelayCommand AddToCartCommand { get; }
+    public RelayCommand RemoveFromCartCommand { get; }
+    public RelayCommand NewOrderCommand { get; }
+    public RelayCommand PaymentCommand { get; }
+    public RelayCommand AddNoteCommand { get; }
+    public RelayCommand OpenSettingsCommand { get; }
+    public RelayCommand SelectMilkTeaCommand { get; }
+    public RelayCommand SelectToppingCommand { get; }
+    public RelayCommand RemoveToppingCommand { get; }
+
+    public MainPOSViewModel()
+    {
+        _menuService = new MenuService();
+        _receiptService = new ReceiptService();
+        
+        InitializeCommands();
+        LoadMenuItems();
+    }
+
+    private void InitializeCommands()
+    {
+        AddToCartCommand = new RelayCommand(AddToCart, CanAddToCart);
+        RemoveFromCartCommand = new RelayCommand(RemoveFromCart);
+        NewOrderCommand = new RelayCommand(NewOrder);
+        PaymentCommand = new RelayCommand(ProcessPayment, CanProcessPayment);
+        AddNoteCommand = new RelayCommand(AddNote);
+        OpenSettingsCommand = new RelayCommand(OpenSettings);
+        SelectMilkTeaCommand = new RelayCommand(SelectMilkTea);
+        SelectToppingCommand = new RelayCommand(SelectTopping);
+        RemoveToppingCommand = new RelayCommand(RemoveTopping);
+    }
+
+    #region Properties
+
+    public string OrderId => $"ĐH{_currentOrder.Id[..8]}";
+
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set
+        {
+            _selectedTabIndex = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public MenuItem? SelectedMilkTea
+    {
+        get => _selectedMilkTea;
+        set
+        {
+            _selectedMilkTea = value;
+            OnPropertyChanged();
+            AddToCartCommand.RaiseCanExecuteChanged();
+            UpdatePreviewPrice();
+        }
+    }
+
+    public string CustomerNote
+    {
+        get => _customerNote;
+        set
+        {
+            _customerNote = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string SelectedSugarLevel
+    {
+        get => _selectedSugarLevel;
+        set
+        {
+            _selectedSugarLevel = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string SelectedIceLevel
+    {
+        get => _selectedIceLevel;
+        set
+        {
+            _selectedIceLevel = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public SizeOption SelectedSize
+    {
+        get => _selectedSize;
+        set
+        {
+            _selectedSize = value;
+            OnPropertyChanged();
+            UpdatePreviewPrice();
+        }
+    }
+
+    public int Quantity
+    {
+        get => _quantity;
+        set
+        {
+            _quantity = Math.Max(1, value);
+            OnPropertyChanged();
+            UpdatePreviewPrice();
+        }
+    }
+
+    private decimal _previewPrice = 0;
+    public string PreviewPriceText => $"💰 Giá dự kiến: {_previewPrice * Quantity:N0}đ";
+
+    public string SubtotalText => $"📊 Tạm tính: {_currentOrder.Subtotal:N0}đ";
+    public string DiscountText => $"🎯 Giảm giá: -{_currentOrder.Discount:N0}đ";
+    public string TotalText => $"💳 TỔNG CỘNG: {_currentOrder.Total:N0}đ";
+    public string OrderStatusText => $"📋 Trạng thái: {_currentOrder.State.Name}";
+    public int ItemCount => _currentOrder.Items.Count;
+    public string SelectedToppingsText => SelectedToppings.Any() 
+        ? $"🥤 Topping đã chọn: {string.Join(", ", SelectedToppings.Select(t => t.Name))}"
+        : "Chưa chọn topping";
+
+    #endregion
+
+    #region Commands
+
+    private void SelectMilkTea(object? parameter)
+    {
+        if (parameter is MenuItem item)
+        {
+            SelectedMilkTea = item;
+            SelectedTabIndex = 0; // Keep on milk tea tab to show customization
+        }
+    }
+
+    private void SelectTopping(object? parameter)
+    {
+        if (parameter is MenuItem topping && !SelectedToppings.Contains(topping))
+        {
+            SelectedToppings.Add(topping);
+            _selectedToppings.Add(topping);
+            OnPropertyChanged(nameof(SelectedToppingsText));
+            UpdatePreviewPrice();
+        }
+    }
+
+    private void RemoveTopping(object? parameter)
+    {
+        if (parameter is MenuItem topping)
+        {
+            SelectedToppings.Remove(topping);
+            _selectedToppings.Remove(topping);
+            OnPropertyChanged(nameof(SelectedToppingsText));
+            UpdatePreviewPrice();
+        }
+    }
+
+    private bool CanAddToCart(object? parameter) => SelectedMilkTea != null;
+
+    private void AddToCart(object? parameter)
+    {
+        if (SelectedMilkTea == null) return;
+
+        try
+        {
+            var toppingNames = _selectedToppings.Select(t => t.Name).ToList();
+            var drink = DrinkFactory.CreateDrinkWithToppings(SelectedMilkTea.Name, toppingNames);
+
+            var orderItem = new OrderItem(drink)
+            {
+                Size = SelectedSize,
+                Quantity = Quantity,
+                SugarLevel = SelectedSugarLevel,
+                IceLevel = SelectedIceLevel,
+                Toppings = toppingNames
+            };
+
+            _currentOrder.AddItem(orderItem);
+            CartItems.Add(orderItem);
+            
+            RefreshOrderInfo();
+            ResetSelection();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi thêm vào giỏ hàng: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void RemoveFromCart(object? parameter)
+    {
+        if (parameter is OrderItem item)
+        {
+            _currentOrder.RemoveItem(item.Id);
+            CartItems.Remove(item);
+            RefreshOrderInfo();
+        }
+    }
+
+    private void NewOrder(object? parameter)
+    {
+        _currentOrder = new Order();
+        CartItems.Clear();
+        CustomerNote = "";
+        RefreshOrderInfo();
+        ResetSelection();
+        OnPropertyChanged(nameof(OrderId));
+    }
+
+    private bool CanProcessPayment(object? parameter) => CartItems.Any();
+
+    private void ProcessPayment(object? parameter)
+    {
+        try
+        {
+            _currentOrder.Checkout();
+            
+            var receipt = _receiptService.GenerateReceipt(_currentOrder, CustomerNote);
+            _receiptService.PrintReceipt(receipt);
+            
+            ShowReceipt(receipt);
+            RefreshOrderInfo();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi thanh toán: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void AddNote(object? parameter)
+    {
+        var noteWindow = new NoteWindow { Owner = System.Windows.Application.Current.MainWindow };
+        noteWindow.NoteText = CustomerNote;
+        
+        if (noteWindow.ShowDialog() == true)
+        {
+            CustomerNote = noteWindow.NoteText;
+        }
+    }
+
+    private void OpenSettings(object? parameter)
+    {
+        var settingsWindow = new SettingsWindow { Owner = System.Windows.Application.Current.MainWindow };
+        settingsWindow.ShowDialog();
+        
+        // Force reload menu items after closing settings to show new images
+        LoadMenuItems();
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    public void LoadMenuItems()
+    {
+        // Force reload from file to get latest data including new images
+        StaticMenuData.ForceReload();
+        
+        MilkTeaItems.Clear();
+        ToppingItems.Clear();
+        
+        foreach (var item in _menuService.GetMilkTeaItems())
+            MilkTeaItems.Add(item);
+            
+        foreach (var item in _menuService.GetToppingItems())
+            ToppingItems.Add(item);
+
+        // Force UI update
+        OnPropertyChanged(nameof(MilkTeaItems));
+        OnPropertyChanged(nameof(ToppingItems));
+    }
+
+    private void UpdatePreviewPrice()
+    {
+        if (SelectedMilkTea == null)
+        {
+            _previewPrice = 0;
+        }
+        else
+        {
+            try
+            {
+                var toppingNames = _selectedToppings.Select(t => t.Name).ToList();
+                var drink = DrinkFactory.CreateDrinkWithToppings(SelectedMilkTea.Name, toppingNames);
+                var basePrice = drink.GetPrice();
+                _previewPrice = StaticMenuData.CalculatePriceBySize(basePrice, SelectedSize);
+            }
+            catch
+            {
+                _previewPrice = StaticMenuData.CalculatePriceBySize(SelectedMilkTea.BasePrice, SelectedSize);
+            }
+        }
+        
+        OnPropertyChanged(nameof(PreviewPriceText));
+    }
+
+    private void RefreshOrderInfo()
+    {
+        OnPropertyChanged(nameof(SubtotalText));
+        OnPropertyChanged(nameof(DiscountText));
+        OnPropertyChanged(nameof(TotalText));
+        OnPropertyChanged(nameof(OrderStatusText));
+        OnPropertyChanged(nameof(ItemCount));
+        PaymentCommand.RaiseCanExecuteChanged();
+    }
+
+    private void ResetSelection()
+    {
+        SelectedMilkTea = null;
+        SelectedToppings.Clear();
+        _selectedToppings.Clear();
+        Quantity = 1;
+        SelectedSize = SizeOption.Medium;
+        SelectedSugarLevel = "100%";
+        SelectedIceLevel = "100%";
+        OnPropertyChanged(nameof(SelectedToppingsText));
+        UpdatePreviewPrice();
+    }
+
+    private static void ShowReceipt(string receipt)
+    {
+        var receiptWindow = new ReceiptWindow { Owner = System.Windows.Application.Current.MainWindow };
+        receiptWindow.ReceiptText = receipt;
+        receiptWindow.ShowDialog();
+    }
+
+    #endregion
+}

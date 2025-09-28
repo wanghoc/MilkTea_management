@@ -1,0 +1,8 @@
+using MilkTeaShop.Domain.Entities;
+
+namespace MilkTeaShop.Application.Services;
+
+public class OrderService
+{
+    public Order CreateOrder() => new();
+}

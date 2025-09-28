@@ -1,0 +1,227 @@
+﻿<Window x:Class="MilkTeaShop.Presentation.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:MilkTeaShop.Presentation.Converters"
+        Title="Hệ thống quản lý Trà Sữa" Height="700" Width="1200"
+        WindowState="Maximized">
+    <Window.Resources>
+        <converters:TabVisibilityConverter x:Key="TabVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <!-- Add a converter for object equality comparison -->
+        <converters:ObjectEqualityConverter x:Key="ObjectEqualityConverter"/>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Left Panel: Menu -->
+        <Grid Grid.Column="0" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                <TextBlock Text="MENU" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="Cài đặt" Command="{Binding OpenSettingsCommand}" 
+                        Margin="20,0,0,0" Padding="10,5" Background="LightBlue"/>
+            </StackPanel>
+            
+            <!-- Topping Notice -->
+            <TextBlock Grid.Row="1" Text="Topping không bán lẻ, vui lòng chọn loại trà sữa rồi chọn loại topping (nếu có)" 
+                       FontSize="12" Foreground="Red" FontStyle="Italic" Margin="0,0,0,10" TextWrapping="Wrap"/>
+            
+            <!-- Tab Control -->
+            <TabControl Grid.Row="2" SelectedIndex="{Binding SelectedTabIndex}" Height="50">
+                <TabItem Header="TRÀ SỮA" FontSize="14" FontWeight="Bold"/>
+                <TabItem Header="TOPPING" FontSize="14" FontWeight="Bold"/>
+            </TabControl>
+            
+            <!-- Menu Items -->
+            <Grid Grid.Row="3" Margin="0,10,0,0">
+                <!-- Trà sữa tab content -->
+                <ScrollViewer Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisibilityConverter}, ConverterParameter=0}">
+                    <ItemsControl ItemsSource="{Binding MilkTeaItems}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="Gray" BorderThickness="1" Margin="5" 
+                                        Background="White" CornerRadius="5" Width="150" Height="180"
+                                        Cursor="Hand">
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" 
+                                                    Command="{Binding DataContext.SelectMilkTeaCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"/>
+                                    </Border.InputBindings>
+                                    <StackPanel>
+                                        <!-- Image or placeholder -->
+                                        <Border Height="100" Margin="5" CornerRadius="3" Background="LightGray">
+                                            <!-- Show image when available -->
+                                            <Image Source="{Binding ImagePath}" Stretch="UniformToFill" 
+                                                   Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                            <!-- Show placeholder when no image -->
+                                            <TextBlock Text="No Image" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                       FontSize="10" Foreground="Gray"
+                                                       Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Reverse}"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" 
+                                                 HorizontalAlignment="Center" Margin="5,5,5,0" 
+                                                 TextWrapping="Wrap" MaxHeight="40"/>
+                                        <TextBlock Text="{Binding BasePrice, StringFormat='{}{0:N0}đ'}" 
+                                                 HorizontalAlignment="Center" Margin="5" 
+                                                 FontSize="14" Foreground="Red" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="White"/>
+                                            <Style.Triggers>
+                                                <!-- Use MultiDataTrigger to compare two objects -->
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition>
+                                                            <Condition.Binding>
+                                                                <MultiBinding Converter="{StaticResource ObjectEqualityConverter}">
+                                                                    <Binding Path="."/>
+                                                                    <Binding Path="DataContext.SelectedMilkTea" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                                </MultiBinding>
+                                                            </Condition.Binding>
+                                                            <Condition.Value>True</Condition.Value>
+                                                        </Condition>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Background" Value="LightBlue"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                
+                <!-- Topping tab content -->
+                <ScrollViewer Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisibilityConverter}, ConverterParameter=1}">
+                    <ItemsControl ItemsSource="{Binding ToppingItems}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="Gray" BorderThickness="1" Margin="5" 
+                                        Background="White" CornerRadius="5" Width="120" Height="120"
+                                        Cursor="Hand">
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" 
+                                                    Command="{Binding DataContext.SelectToppingCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"/>
+                                    </Border.InputBindings>
+                                    <StackPanel>
+                                        <!-- Image or placeholder -->
+                                        <Border Height="60" Margin="5" CornerRadius="3">
+                                            <Border.Background>
+                                                <ImageBrush ImageSource="{Binding ImagePath}" Stretch="UniformToFill"/>
+                                            </Border.Background>
+                                            <!-- Fallback if no image -->
+                                            <Rectangle Fill="LightGray" Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" 
+                                                 HorizontalAlignment="Center" Margin="2" 
+                                                 TextWrapping="Wrap" FontSize="10"/>
+                                        <TextBlock Text="{Binding BasePrice, StringFormat='{}{0:N0}đ'}" 
+                                                 HorizontalAlignment="Center" 
+                                                 FontSize="10" Foreground="Red" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+        
+        <!-- Right Panel: Order Details -->
+        <Grid Grid.Column="1" Background="LightGray" Margin="0,10,10,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Order Header -->
+            <StackPanel Grid.Row="0" Background="DarkBlue" Margin="0,0,0,10">
+                <TextBlock Text="PHIẾU THANH TOÁN" Foreground="White" FontSize="16" 
+                         FontWeight="Bold" HorizontalAlignment="Center" Margin="10"/>
+                <TextBlock Text="{Binding OrderId}" Foreground="White" FontSize="12" 
+                         HorizontalAlignment="Center" Margin="0,0,0,10"/>
+            </StackPanel>
+            
+            <!-- Customization Panel -->
+            <ScrollViewer Grid.Row="1" MaxHeight="200" Margin="10,0,10,10" 
+                         Visibility="{Binding SelectedMilkTea, Converter={StaticResource NullToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="TÙY CHỈNH ĐƠN HÀNG" FontWeight="Bold" Margin="0,0,0,10"/>
+                    
+                    <!-- Selected Milk Tea -->
+                    <TextBlock Text="{Binding SelectedMilkTea.Name}" FontWeight="Bold" 
+                             Foreground="Blue" Margin="0,0,0,5"/>
+                    
+                    <!-- Selected Toppings -->
+                    <TextBlock Text="{Binding SelectedToppingsText}" FontSize="10" 
+                             Margin="0,0,0,5" TextWrapping="Wrap"/>
+                    
+                    <!-- Selected Toppings List -->
+                    <ItemsControl ItemsSource="{Binding SelectedToppings}" Margin="0,0,0,10">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,2">
+                                    <TextBlock Text="{Binding Name}" FontSize="10" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding BasePrice, StringFormat=' {0:N0}đ'}" 
+                                             FontSize="10" VerticalAlignment="Center" Foreground="Red"/>
+                                    <Button Content="X" Width="15" Height="15" Margin="5,0,0,0"
+                                          Command="{Binding DataContext.RemoveToppingCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                          CommandParameter="{Binding}" Background="Red" Foreground="White"
+                                          FontSize="8"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Size -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Size:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+                        <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Sizes}" 
+                                SelectedItem="{Binding SelectedSize}" Margin="0,0,0,5"/>
+                        
+                        <!-- Sugar Level -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Đường:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding SugarLevels}" 
+                                SelectedItem="{Binding SelectedSugarLevel}" Margin="0,0,0,5"/>
+                        
+                        <!-- Ice Level -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Đá:" VerticalAlignment="Center" Margin="0,0,10,5"/>

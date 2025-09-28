@@ -1,0 +1,523 @@
+using System.Collections.ObjectModel;
+using System.Windows;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Domain.Interfaces;
+using MilkTeaShop.Domain.Factories;
+using MilkTeaShop.Domain.Data;
+using MilkTeaShop.Application.Services;
+
+namespace MilkTeaShop.Presentation.ViewModels;
+
+public class MainPOSViewModel : BaseViewModel
+{
+    private readonly IMenuService _menuService;
+    private readonly IReceiptService _receiptService;
+    
+    private Order _currentOrder = new();
+    private MenuItem? _selectedMilkTea;
+    private readonly List<MenuItem> _selectedToppings = new();
+    private int _selectedTabIndex = 0;
+    private string _customerNote = "";
+    private string _selectedSugarLevel = "100%";
+    private string _selectedIceLevel = "100%";
+    private SizeOption _selectedSize = SizeOption.Medium;
+    private int _quantity = 1;
+
+    public ObservableCollection<MenuItem> MilkTeaItems { get; } = new();
+    public ObservableCollection<MenuItem> ToppingItems { get; } = new();
+    public ObservableCollection<OrderItem> CartItems { get; } = new();
+    public ObservableCollection<MenuItem> SelectedToppings { get; } = new();
+    public ObservableCollection<string> SugarLevels { get; } = new() { "0%", "25%", "50%", "75%", "100%" };
+    public ObservableCollection<string> IceLevels { get; } = new() { "0%", "25%", "50%", "75%", "100%" };
+    public ObservableCollection<SizeOption> Sizes { get; } = new() { SizeOption.Small, SizeOption.Medium, SizeOption.Large };
+
+    public RelayCommand AddToCartCommand { get; private set; }
+    public RelayCommand RemoveFromCartCommand { get; private set; }
+    public RelayCommand NewOrderCommand { get; private set; }
+    public RelayCommand PaymentCommand { get; private set; }
+    public RelayCommand AddNoteCommand { get; private set; }
+    public RelayCommand OpenSettingsCommand { get; private set; }
+    public RelayCommand SelectMilkTeaCommand { get; private set; }
+    public RelayCommand SelectToppingCommand { get; private set; }
+    public RelayCommand RemoveToppingCommand { get; private set; }
+
+    public MainPOSViewModel()
+    {
+        try
+        {
+            _menuService = new MenuService();
+            _receiptService = new ReceiptService();
+            
+            InitializeCommands();
+            LoadMenuItems();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khởi tạo ứng dụng: {ex.Message}", "Lỗi nghiêm trọng", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void InitializeCommands()
+    {
+        AddToCartCommand = new RelayCommand(AddToCart, CanAddToCart);
+        RemoveFromCartCommand = new RelayCommand(RemoveFromCart);
+        NewOrderCommand = new RelayCommand(NewOrder);
+        PaymentCommand = new RelayCommand(ProcessPayment, CanProcessPayment);
+        AddNoteCommand = new RelayCommand(AddNote);
+        OpenSettingsCommand = new RelayCommand(OpenSettings);
+        SelectMilkTeaCommand = new RelayCommand(SelectMilkTea);
+        SelectToppingCommand = new RelayCommand(SelectTopping);
+        RemoveToppingCommand = new RelayCommand(RemoveTopping);
+    }
+
+    #region Properties
+
+    public string OrderId 
+    {
+        get
+        {
+            try
+            {
+                return $"ĐH{_currentOrder?.Id?[..8] ?? "00000000"}";
+            }
+            catch
+            {
+                return "ĐH00000000";
+            }
+        }
+    }
+
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set
+        {
+            _selectedTabIndex = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public MenuItem? SelectedMilkTea
+    {
+        get => _selectedMilkTea;
+        set
+        {
+            _selectedMilkTea = value;
+            OnPropertyChanged();
+            AddToCartCommand?.RaiseCanExecuteChanged();
+            UpdatePreviewPrice();
+        }
+    }
+
+    public string CustomerNote
+    {
+        get => _customerNote;
+        set
+        {
+            _customerNote = value ?? "";
+            OnPropertyChanged();
+        }
+    }
+
+    public string SelectedSugarLevel
+    {
+        get => _selectedSugarLevel;
+        set
+        {
+            _selectedSugarLevel = value ?? "100%";
+            OnPropertyChanged();
+        }
+    }
+
+    public string SelectedIceLevel
+    {
+        get => _selectedIceLevel;
+        set
+        {
+            _selectedIceLevel = value ?? "100%";
+            OnPropertyChanged();
+        }
+    }
+
+    public SizeOption SelectedSize
+    {
+        get => _selectedSize;
+        set
+        {
+            _selectedSize = value;
+            OnPropertyChanged();
+            UpdatePreviewPrice();
+        }
+    }
+
+    public int Quantity
+    {
+        get => _quantity;
+        set
+        {
+            _quantity = Math.Max(1, value);
+            OnPropertyChanged();
+            UpdatePreviewPrice();
+        }
+    }
+
+    private decimal _previewPrice = 0;
+    public string PreviewPriceText => $"💰 Giá dự kiến: {_previewPrice * Quantity:N0}đ";
+
+    public string SubtotalText => $"📊 Tạm tính: {_currentOrder?.Subtotal ?? 0:N0}đ";
+    public string DiscountText => $"🎯 Giảm giá: -{_currentOrder?.Discount ?? 0:N0}đ";
+    public string TotalText => $"💳 TỔNG CỘNG: {_currentOrder?.Total ?? 0:N0}đ";
+    public string OrderStatusText => $"📋 Trạng thái: {_currentOrder?.State?.Name ?? "Chờ xử lý"}";
+    public int ItemCount => _currentOrder?.Items?.Count ?? 0;
+    public string SelectedToppingsText => SelectedToppings?.Any() == true
+        ? $"🥤 Topping đã chọn: {string.Join(", ", SelectedToppings.Select(t => t.Name))}"
+        : "Chưa chọn topping";
+
+    #endregion
+
+    #region Commands
+
+    private void SelectMilkTea(object? parameter)
+    {
+        try
+        {
+            if (parameter is MenuItem item)
+            {
+                SelectedMilkTea = item;
+                SelectedTabIndex = 0; // Keep on milk tea tab to show customization
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi chọn trà sữa: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void SelectTopping(object? parameter)
+    {
+        try
+        {
+            if (parameter is MenuItem topping && topping != null && !SelectedToppings.Contains(topping))
+            {
+                SelectedToppings.Add(topping);
+                _selectedToppings.Add(topping);
+                OnPropertyChanged(nameof(SelectedToppingsText));
+                UpdatePreviewPrice();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi chọn topping: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void RemoveTopping(object? parameter)
+    {
+        try
+        {
+            if (parameter is MenuItem topping && topping != null)
+            {
+                SelectedToppings.Remove(topping);
+                _selectedToppings.Remove(topping);
+                OnPropertyChanged(nameof(SelectedToppingsText));
+                UpdatePreviewPrice();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi xóa topping: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private bool CanAddToCart(object? parameter) => SelectedMilkTea != null;
+
+    private void AddToCart(object? parameter)
+    {
+        if (SelectedMilkTea == null) return;
+
+        try
+        {
+            var toppingNames = _selectedToppings.Select(t => t.Name).ToList();
+            var drink = DrinkFactory.CreateDrinkWithToppings(SelectedMilkTea.Name, toppingNames);
+
+            var orderItem = new OrderItem(drink)
+            {
+                Size = SelectedSize,
+                Quantity = Quantity,
+                SugarLevel = SelectedSugarLevel,
+                IceLevel = SelectedIceLevel,
+                Toppings = toppingNames
+            };
+
+            _currentOrder?.AddItem(orderItem);
+            CartItems.Add(orderItem);
+            
+            RefreshOrderInfo();
+            ResetSelection();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi thêm vào giỏ hàng: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void RemoveFromCart(object? parameter)
+    {
+        try
+        {
+            if (parameter is OrderItem item && item != null)
+            {
+                _currentOrder?.RemoveItem(item.Id);
+                CartItems.Remove(item);
+                RefreshOrderInfo();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi xóa khỏi giỏ hàng: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void NewOrder(object? parameter)
+    {
+        try
+        {
+            _currentOrder = new Order();
+            CartItems.Clear();
+            CustomerNote = "";
+            RefreshOrderInfo();
+            ResetSelection();
+            OnPropertyChanged(nameof(OrderId));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi tạo đơn mới: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private bool CanProcessPayment(object? parameter) => CartItems?.Any() == true;
+
+    private void ProcessPayment(object? parameter)
+    {
+        try
+        {
+            if (_currentOrder == null || !CartItems.Any())
+            {
+                MessageBox.Show("Giỏ hàng trống, không thể thanh toán!", "Thông báo", 
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            _currentOrder.Checkout();
+            
+            var receipt = _receiptService.GenerateReceipt(_currentOrder, CustomerNote);
+            _receiptService.PrintReceipt(receipt);
+            
+            ShowReceipt(receipt);
+            
+            // Tạo đơn mới sau khi thanh toán thành công
+            NewOrder(null);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi thanh toán: {ex.Message}\n\nVui lòng thử lại hoặc liên hệ hỗ trợ.", "Lỗi thanh toán", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void AddNote(object? parameter)
+    {
+        try
+        {
+            var noteWindow = new NoteWindow();
+            
+            // Safer owner assignment with null checks
+            var mainWindow = System.Windows.Application.Current?.MainWindow;
+            if (mainWindow != null && mainWindow.IsLoaded)
+            {
+                noteWindow.Owner = mainWindow;
+            }
+            
+            noteWindow.NoteText = CustomerNote;
+            
+            if (noteWindow.ShowDialog() == true)
+            {
+                CustomerNote = noteWindow.NoteText ?? "";
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi mở cửa sổ ghi chú: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void OpenSettings(object? parameter)
+    {
+        try
+        {
+            var settingsWindow = new SettingsWindow();
+            
+            // Safer owner assignment with null checks
+            var mainWindow = System.Windows.Application.Current?.MainWindow;
+            if (mainWindow != null && mainWindow.IsLoaded)
+            {
+                settingsWindow.Owner = mainWindow;
+            }
+            
+            settingsWindow.ShowDialog();
+            
+            // Force reload menu items after closing settings to show new images
+            LoadMenuItems();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi mở cửa sổ cài đặt: {ex.Message}", "Lỗi cài đặt", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    public void LoadMenuItems()
+    {
+        try
+        {
+            // Force reload from file to get latest data including new images
+            StaticMenuData.ForceReload();
+            
+            MilkTeaItems.Clear();
+            ToppingItems.Clear();
+            
+            var milkTeaItems = _menuService?.GetMilkTeaItems() ?? new List<MenuItem>();
+            var toppingItems = _menuService?.GetToppingItems() ?? new List<MenuItem>();
+            
+            foreach (var item in milkTeaItems)
+            {
+                if (item != null)
+                    MilkTeaItems.Add(item);
+            }
+                
+            foreach (var item in toppingItems)
+            {
+                if (item != null)
+                    ToppingItems.Add(item);
+            }
+
+            // Force UI update
+            OnPropertyChanged(nameof(MilkTeaItems));
+            OnPropertyChanged(nameof(ToppingItems));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi tải danh sách món: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void UpdatePreviewPrice()
+    {
+        try
+        {
+            if (SelectedMilkTea == null)
+            {
+                _previewPrice = 0;
+            }
+            else
+            {
+                try
+                {
+                    var toppingNames = _selectedToppings?.Select(t => t?.Name).Where(n => !string.IsNullOrEmpty(n)).ToList() ?? new List<string>();
+                    var drink = DrinkFactory.CreateDrinkWithToppings(SelectedMilkTea.Name, toppingNames);
+                    var basePrice = drink?.GetPrice() ?? SelectedMilkTea.BasePrice;
+                    _previewPrice = StaticMenuData.CalculatePriceBySize(basePrice, SelectedSize);
+                }
+                catch
+                {
+                    _previewPrice = StaticMenuData.CalculatePriceBySize(SelectedMilkTea.BasePrice, SelectedSize);
+                }
+            }
+            
+            OnPropertyChanged(nameof(PreviewPriceText));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi tính giá: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void RefreshOrderInfo()
+    {
+        try
+        {
+            OnPropertyChanged(nameof(SubtotalText));
+            OnPropertyChanged(nameof(DiscountText));
+            OnPropertyChanged(nameof(TotalText));
+            OnPropertyChanged(nameof(OrderStatusText));
+            OnPropertyChanged(nameof(ItemCount));
+            PaymentCommand?.RaiseCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi cập nhật thông tin đơn hàng: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void ResetSelection()
+    {
+        try
+        {
+            SelectedMilkTea = null;
+            SelectedToppings.Clear();
+            _selectedToppings.Clear();
+            Quantity = 1;
+            SelectedSize = SizeOption.Medium;
+            SelectedSugarLevel = "100%";
+            SelectedIceLevel = "100%";
+            OnPropertyChanged(nameof(SelectedToppingsText));
+            UpdatePreviewPrice();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi reset lựa chọn: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private static void ShowReceipt(string receipt)
+    {
+        try
+        {
+            var receiptWindow = new ReceiptWindow();
+            
+            // Safer owner assignment with null checks
+            var mainWindow = System.Windows.Application.Current?.MainWindow;
+            if (mainWindow != null && mainWindow.IsLoaded)
+            {
+                receiptWindow.Owner = mainWindow;
+            }
+            
+            receiptWindow.ReceiptText = receipt;
+            receiptWindow.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi hiển thị hóa đơn: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    #endregion
+}

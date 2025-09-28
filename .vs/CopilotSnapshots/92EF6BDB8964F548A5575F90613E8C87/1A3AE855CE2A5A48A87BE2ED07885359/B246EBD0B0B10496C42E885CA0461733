@@ -1,0 +1,155 @@
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Application.Services;
+using MilkTeaShop.Domain.Data;
+
+namespace MilkTeaShop.Presentation.ViewModels;
+
+public class SettingsViewModel : BaseViewModel
+{
+    private readonly IMenuService _menuService;
+    private int _selectedTabIndex = 0;
+    private MenuItem? _selectedItem;
+
+    public ObservableCollection<MenuItem> MilkTeaItems { get; } = new();
+    public ObservableCollection<MenuItem> ToppingItems { get; } = new();
+
+    public RelayCommand AddNewItemCommand { get; }
+    public RelayCommand EditItemCommand { get; }
+    public RelayCommand DeleteItemCommand { get; }
+    public RelayCommand RefreshCommand { get; }
+
+    public SettingsViewModel()
+    {
+        _menuService = new MenuService();
+        
+        AddNewItemCommand = new RelayCommand(AddNewItem);
+        EditItemCommand = new RelayCommand(EditItem);
+        DeleteItemCommand = new RelayCommand(DeleteItem);
+        RefreshCommand = new RelayCommand(Refresh);
+        
+        LoadMenuItems();
+    }
+
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set
+        {
+            _selectedTabIndex = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public MenuItem? SelectedItem
+    {
+        get => _selectedItem;
+        set
+        {
+            _selectedItem = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private void AddNewItem(object? parameter)
+    {
+        var addItemWindow = new AddEditItemWindow
+        {
+            Owner = System.Windows.Application.Current.MainWindow,
+            Title = "Thêm món mới"
+        };
+
+        // Set category based on current tab
+        var viewModel = addItemWindow.DataContext as AddEditItemViewModel;
+        if (viewModel != null)
+        {
+            viewModel.SelectedCategory = SelectedTabIndex == 0 ? MenuCategory.MilkTea : MenuCategory.Topping;
+        }
+
+        if (addItemWindow.ShowDialog() == true)
+        {
+            LoadMenuItems(); // Refresh the lists
+        }
+    }
+
+    private void EditItem(object? parameter)
+    {
+        if (parameter is MenuItem item)
+        {
+            var editItemWindow = new AddEditItemWindow
+            {
+                Owner = System.Windows.Application.Current.MainWindow,
+                Title = "Chỉnh sửa món"
+            };
+
+            var viewModel = editItemWindow.DataContext as AddEditItemViewModel;
+            if (viewModel != null)
+            {
+                // Populate with existing item data
+                viewModel.LoadItem(item);
+            }
+
+            if (editItemWindow.ShowDialog() == true)
+            {
+                LoadMenuItems(); // Refresh the lists
+            }
+        }
+    }
+
+    private void DeleteItem(object? parameter)
+    {
+        if (parameter is MenuItem item)
+        {
+            var result = MessageBox.Show(
+                $"Bạn có chắc chắn muốn xóa '{item.Name}'?\nThao tác này không thể hoàn tác.",
+                "Xác nhận xóa",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    // Remove from static data
+                    if (item.Category == MenuCategory.MilkTea)
+                    {
+                        StaticMenuData.MilkTeaItems.Remove(item);
+                        MilkTeaItems.Remove(item);
+                    }
+                    else
+                    {
+                        StaticMenuData.ToppingItems.Remove(item);
+                        ToppingItems.Remove(item);
+                    }
+
+                    MessageBox.Show($"Đã xóa '{item.Name}' thành công!", "Thông báo",
+                                   MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi xóa món: {ex.Message}", "Lỗi",
+                                   MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+    }
+
+    private void Refresh(object? parameter)
+    {
+        LoadMenuItems();
+    }
+
+    private void LoadMenuItems()
+    {
+        MilkTeaItems.Clear();
+        ToppingItems.Clear();
+
+        foreach (var item in _menuService.GetMilkTeaItems())
+            MilkTeaItems.Add(item);
+
+        foreach (var item in _menuService.GetToppingItems())
+            ToppingItems.Add(item);
+    }
+}}

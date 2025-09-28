@@ -1,0 +1,204 @@
+{
+  "MilkTeaItems": [
+    {
+      "Id": "f8532514-ea39-4828-99bb-0ec1b56d7974",
+      "Name": "Tr\u00E0 s\u1EEFa nguy\u00EAn ch\u1EA5t",
+      "BasePrice": 35000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa truy\u1EC1n th\u1ED1ng",
+      "IsAvailable": true
+    },
+    {
+      "Id": "4ca913e2-3bb3-4808-b79d-28183d183da6",
+      "Name": "Tr\u00E0 s\u1EEFa chocolate",
+      "BasePrice": 40000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa v\u1ECB chocolate th\u01A1m ngon",
+      "IsAvailable": true
+    },
+    {
+      "Id": "19b9a10e-238c-4da4-990a-8b12894a4d03",
+      "Name": "Tr\u00E0 s\u1EEFa d\u00E2u",
+      "BasePrice": 42000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa v\u1ECB d\u00E2u t\u01B0\u01A1i m\u00E1t",
+      "IsAvailable": true
+    },
+    {
+      "Id": "e6f8976e-5c73-4d01-ac6b-983a04c4ac3c",
+      "Name": "Tr\u00E0 s\u1EEFa khoai m\u00F4n",
+      "BasePrice": 45000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa khoai m\u00F4n b\u00E9o ng\u1EADy",
+      "IsAvailable": true
+    },
+    {
+      "Id": "8af7cebb-9813-46ab-b0c5-cd04a1877c87",
+      "Name": "Tr\u00E0 s\u1EEFa matcha",
+      "BasePrice": 48000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa matcha Nh\u1EADt B\u1EA3n",
+      "IsAvailable": true
+    },
+    {
+      "Id": "7f24feca-5a0f-43ae-bac6-7953d2c37c0c",
+      "Name": "Tr\u00E0 s\u1EEFa \u0111\u01B0\u1EDDng \u0111en",
+      "BasePrice": 50000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa \u0111\u01B0\u1EDDng \u0111en Taiwan",
+      "IsAvailable": true
+    },
+    {
+      "Id": "3857a466-0628-4c44-b5fc-56eda1b50665",
+      "Name": "Tr\u00E0 s\u1EEFa kem cheese",
+      "BasePrice": 55000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa v\u1EDBi l\u1EDBp kem cheese m\u1EB7n ng\u1ECDt",
+      "IsAvailable": true
+    },
+    {
+      "Id": "8998e039-c9b2-486a-acab-86223595b4f4",
+      "Name": "Tr\u00E0 s\u1EEFa socola",
+      "BasePrice": 45000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa socola \u0111\u1EADm \u0111\u00E0",
+      "IsAvailable": true
+    },
+    {
+      "Id": "a75d9c57-9f0b-4757-9046-8464b2f1b249",
+      "Name": "Tr\u00E0 s\u1EEFa hokkaido",
+      "BasePrice": 52000,
+      "Category": 0,
+      "ImagePath": "",
+      "Description": "Tr\u00E0 s\u1EEFa Hokkaido cao c\u1EA5p",
+      "IsAvailable": true
+    },
+    {
+      "Id": "b3f2e113-7ab5-4ef5-b086-49d8d709b9ab",
+      "Name": "Tr\u00E0 s\u1EEFa okinawa",
+      "BasePrice": 48000,
+      "Category": 0,
+      "ImagePath": "Images\\logo2.png",
+      "Description": "Tr\u00E0 s\u1EEFa Okinawa th\u01A1m l\u1EEBng",
+      "IsAvailable": true
+    },
+    {
+      "Id": "abf7ac82-aa7c-457f-9f1c-527e41219e9e",
+      "Name": "N\u01B0\u1EDBc rau m\u00E1",
+      "BasePrice": 36000,
+      "Category": 0,
+      "ImagePath": "C:\\Users\\quang\\OneDrive\\Hi\u0300nh a\u0309nh\\natra.png",
+      "Description": "Rau m\u00E1 t\u01B0\u01A1i \u0111\u01B0\u1EE3c l\u1EA5y tr\u1EF1c ti\u1EBFp t\u1EEB \u0111\u01B0\u1EDDng t\u00E0u t\u1EA1i Thanh H\u00F3a",
+      "IsAvailable": true
+    }
+  ],
+  "ToppingItems": [
+    {
+      "Id": "5af67b8c-f60e-4c33-bff6-1b3549da952b",
+      "Name": "Tr\u00E2n ch\u00E2u \u0111en",
+      "BasePrice": 8000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Tr\u00E2n ch\u00E2u \u0111en dai ngon",
+      "IsAvailable": true
+    },
+    {
+      "Id": "46eb63b8-b046-47b2-a71b-a156f5f9da56",
+      "Name": "Tr\u00E2n ch\u00E2u tr\u1EAFng",
+      "BasePrice": 8000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Tr\u00E2n ch\u00E2u tr\u1EAFng m\u1EC1m m\u1ECBn",
+      "IsAvailable": true
+    },
+    {
+      "Id": "90fe5e33-de55-4ae8-b66c-67af861a9fd9",
+      "Name": "Tr\u00E2n ch\u00E2u ho\u00E0ng kim",
+      "BasePrice": 10000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Tr\u00E2n ch\u00E2u ho\u00E0ng kim \u0111\u1EB7c bi\u1EC7t",
+      "IsAvailable": true
+    },
+    {
+      "Id": "98723d7e-286a-40e9-879d-974f749ae381",
+      "Name": "Pudding",
+      "BasePrice": 12000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Pudding m\u1EC1m m\u1ECBn",
+      "IsAvailable": true
+    },
+    {
+      "Id": "833bcd9e-e4fe-4e47-b6b1-fa67f6a5c03d",
+      "Name": "Th\u1EA1ch c\u00E0 ph\u00EA",
+      "BasePrice": 10000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Th\u1EA1ch c\u00E0 ph\u00EA th\u01A1m \u0111\u1EADm \u0111\u00E0",
+      "IsAvailable": true
+    },
+    {
+      "Id": "66e3a5e7-2857-4173-a6d7-6622b8d4d808",
+      "Name": "Th\u1EA1ch d\u1EEBa",
+      "BasePrice": 10000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Th\u1EA1ch d\u1EEBa t\u01B0\u01A1i m\u00E1t",
+      "IsAvailable": true
+    },
+    {
+      "Id": "cd107bd3-559d-4a5c-afdd-704461966978",
+      "Name": "Kem cheese",
+      "BasePrice": 15000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "L\u1EDBp kem cheese m\u1EB7n ng\u1ECDt",
+      "IsAvailable": true
+    },
+    {
+      "Id": "cecdba6d-e579-403c-99f5-bb7d4fe042e8",
+      "Name": "\u0110\u1EADu \u0111\u1ECF",
+      "BasePrice": 8000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "\u0110\u1EADu \u0111\u1ECF b\u00F9i b\u00F9i",
+      "IsAvailable": true
+    },
+    {
+      "Id": "0d1301ff-20b2-4d93-bf94-3500324151ec",
+      "Name": "H\u1EA1t chia",
+      "BasePrice": 12000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "H\u1EA1t chia gi\u00E0u dinh d\u01B0\u1EE1ng",
+      "IsAvailable": true
+    },
+    {
+      "Id": "cceb80d9-34c0-4a88-aead-a8f675e1b30d",
+      "Name": "Jelly",
+      "BasePrice": 9000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Th\u1EA1ch jelly nhi\u1EC1u m\u00E0u s\u1EAFc",
+      "IsAvailable": true
+    },
+    {
+      "Id": "42e2291b-0660-427c-8ce4-bd900a668fdc",
+      "Name": "12 \u0111\u00F4i d\u00E9p",
+      "BasePrice": 18000,
+      "Category": 1,
+      "ImagePath": "Images\\hinh-nen-hd-phim-bi-kip-luyen-rong-the-gioi-739463.jpeg",
+      "Description": "D\u00E9p t\u1EEB Nam \u0110\u1ECBnh",
+      "IsAvailable": true
+    }
+  ]
+}

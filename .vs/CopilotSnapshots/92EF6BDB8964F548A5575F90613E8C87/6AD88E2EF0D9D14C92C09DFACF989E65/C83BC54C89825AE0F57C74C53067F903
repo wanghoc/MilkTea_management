@@ -1,0 +1,252 @@
+﻿<Window x:Class="MilkTeaShop.Presentation.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:MilkTeaShop.Presentation.Converters"
+        Title="WangHoc Milk Tea - Quản lý Menu" Height="650" Width="1000"
+        WindowStartupLocation="CenterOwner" Background="#F0F8FF">
+    
+    <Window.Resources>
+        <converters:TabVisibilityConverter x:Key="TabVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Gray" Direction="315" ShadowDepth="2" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header với gradient -->
+        <Border Grid.Row="0" Margin="0,0,0,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4169E1" Offset="0"/>
+                    <GradientStop Color="#6495ED" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Orientation="Horizontal" Margin="30,20" HorizontalAlignment="Center">
+                <TextBlock Text="🧋" FontSize="36" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="WangHoc Milk Tea" FontSize="24" Style="{StaticResource HeaderStyle}"/>
+                    <TextBlock Text="QUẢN LÝ MENU" FontSize="18" Style="{StaticResource HeaderStyle}" 
+                             Opacity="0.8" Margin="0,5,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- Add Button and Tab Control -->
+        <Grid Grid.Row="1" Margin="30,0,30,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Button Grid.Column="0" Content="➕ Thêm món mới" Command="{Binding AddNewItemCommand}" 
+                    Background="#32CD32" Foreground="White" Padding="20,12" FontWeight="Bold"
+                    FontSize="16" CornerRadius="10" Margin="0,0,30,0" Style="{StaticResource ModernButtonStyle}"/>
+            
+            <Border Grid.Column="1" Background="#F5F5F5" CornerRadius="10" Padding="5">
+                <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderThickness="0">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border Name="Panel" Background="#E0E0E0" CornerRadius="8" Margin="3" Padding="25,12">
+                                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                            ContentSource="Header" TextBlock.FontSize="16" TextBlock.FontWeight="Bold"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Panel" Property="Background">
+                                                    <Setter.Value>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                            <GradientStop Color="#FF6B47" Offset="0"/>
+                                                            <GradientStop Color="#FF8E53" Offset="1"/>
+                                                        </LinearGradientBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter TargetName="ContentSite" Property="TextBlock.Foreground" Value="White"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+                    <TabItem Header="🧋 TRÀ SỮA"/>
+                    <TabItem Header="🥤 TOPPING"/>
+                </TabControl>
+            </Border>
+        </Grid>
+        
+        <!-- Menu Lists với styling đẹp hơn -->
+        <Border Grid.Row="2" Background="White" CornerRadius="15" Margin="30,0,30,20" 
+                Padding="20" Effect="{StaticResource {x:Static SystemParameters.DropShadowKey}}">
+            <Grid>
+                <!-- Milk Tea List -->
+                <ScrollViewer Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisibilityConverter}, ConverterParameter=0}">
+                    <ListView ItemsSource="{Binding MilkTeaItems}" SelectedItem="{Binding SelectedItem}" 
+                              Background="Transparent" BorderThickness="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="🖼️ Ảnh" Width="90">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Width="70" Height="70" CornerRadius="8" Background="#F8F8F8">
+                                                <Grid>
+                                                    <Image Source="{Binding ImagePath}" Stretch="UniformToFill" 
+                                                           Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                               Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Reverse}">
+                                                        <TextBlock Text="🧋" FontSize="20" HorizontalAlignment="Center"/>
+                                                        <TextBlock Text="No Image" FontSize="8" Foreground="Gray" HorizontalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="📝 Tên món" Width="220">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" 
+                                                     Foreground="#2E8B57" TextWrapping="Wrap"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="💰 Giá (Medium)" Width="130">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding BasePrice, StringFormat='{}{0:N0}đ'}" 
+                                                     FontWeight="Bold" FontSize="14" Foreground="#FF6347"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="📋 Mô tả" Width="280">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Description}" FontSize="12" 
+                                                     Foreground="#666" TextWrapping="Wrap"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="⚡ Thao tác" Width="180">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Button Content="✏️ Sửa" Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" Background="#FF8C00" Foreground="White" 
+                                                        Margin="0,0,8,0" Padding="12,6" FontSize="12" CornerRadius="5"
+                                                        Style="{StaticResource ModernButtonStyle}"/>
+                                                <Button Content="🗑️ Xóa" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" Background="#FF6347" Foreground="White" 
+                                                        Padding="12,6" FontSize="12" CornerRadius="5"
+                                                        Style="{StaticResource ModernButtonStyle}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </ScrollViewer>
+                
+                <!-- Topping List -->
+                <ScrollViewer Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisibilityConverter}, ConverterParameter=1}">
+                    <ListView ItemsSource="{Binding ToppingItems}" SelectedItem="{Binding SelectedItem}" 
+                              Background="Transparent" BorderThickness="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="🖼️ Ảnh" Width="90">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Width="70" Height="70" CornerRadius="8" Background="#F8F8F8">
+                                                <Grid>
+                                                    <Image Source="{Binding ImagePath}" Stretch="UniformToFill" 
+                                                           Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                               Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Reverse}">
+                                                        <TextBlock Text="🥤" FontSize="20" HorizontalAlignment="Center"/>
+                                                        <TextBlock Text="No Image" FontSize="8" Foreground="Gray" HorizontalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="📝 Tên topping" Width="200">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" 
+                                                     Foreground="#2E8B57" TextWrapping="Wrap"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="💰 Giá" Width="110">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding BasePrice, StringFormat='{}{0:N0}đ'}" 
+                                                     FontWeight="Bold" FontSize="14" Foreground="#FF6347"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="📋 Mô tả" Width="300">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Description}" FontSize="12" 
+                                                     Foreground="#666" TextWrapping="Wrap"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="⚡ Thao tác" Width="180">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Button Content="✏️ Sửa" Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" Background="#FF8C00" Foreground="White" 
+                                                        Margin="0,0,8,0" Padding="12,6" FontSize="12" CornerRadius="5"
+                                                        Style="{StaticResource ModernButtonStyle}"/>
+                                                <Button Content="🗑️ Xóa" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" Background="#FF6347" Foreground="White" 
+                                                        Padding="12,6" FontSize="12" CornerRadius="5"
+                                                        Style="{StaticResource ModernButtonStyle}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        
+        <!-- Footer Button (chỉ còn nút Đóng) -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="30,0,30,20">
+            <Button Content="❌ Đóng" Click="Close_Click" 
+                    Background="#708090" Foreground="White" Padding="20,12" FontSize="16"
+                    CornerRadius="8" Style="{StaticResource ModernButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Window>
