@@ -1,12 +1,37 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\MilkTeaShop\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{22AC8BE7-0A54-4260-A631-C992740FDBCC}|MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj|d:\\milkteashop\\milkteashop.domain\\patterns\\decorator\\toppingdecorators.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{22AC8BE7-0A54-4260-A631-C992740FDBCC}|MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj|solutionrelative:milkteashop.domain\\patterns\\decorator\\toppingdecorators.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ToppingDecorators.cs",
+              "DocumentMoniker": "D:\\MilkTeaShop\\MilkTeaShop.Domain\\Patterns\\Decorator\\ToppingDecorators.cs",
+              "RelativeDocumentMoniker": "MilkTeaShop.Domain\\Patterns\\Decorator\\ToppingDecorators.cs",
+              "ToolTip": "D:\\MilkTeaShop\\MilkTeaShop.Domain\\Patterns\\Decorator\\ToppingDecorators.cs",
+              "RelativeToolTip": "MilkTeaShop.Domain\\Patterns\\Decorator\\ToppingDecorators.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-28T07:56:45.182Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
     }
   ]
 }
