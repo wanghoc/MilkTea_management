@@ -1,0 +1,30 @@
+﻿using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.Data;
+using MilkTeaShop.Domain.ValueObjects;
+
+namespace MilkTeaShop.Application.Services;
+
+public interface IMenuService
+{
+    List<MenuItem> GetMilkTeaItems();
+    List<MenuItem> GetToppingItems();
+    List<MenuItem> GetAllItems();
+    void AddNewItem(MenuItem item);
+    MenuItem? GetItemById(string id);
+}
+
+public class MenuService : IMenuService
+{
+    public List<MenuItem> GetMilkTeaItems() => StaticMenuData.MilkTeaItems.Where(x => x.IsAvailable).ToList();
+    
+    public List<MenuItem> GetToppingItems() => StaticMenuData.ToppingItems.Where(x => x.IsAvailable).ToList();
+    
+    public List<MenuItem> GetAllItems() => StaticMenuData.GetAllItems().Where(x => x.IsAvailable).ToList();
+    
+    public void AddNewItem(MenuItem item)
+    {
+        StaticMenuData.AddNewItem(item);
+    }
+    
+    public MenuItem? GetItemById(string id) => StaticMenuData.GetAllItems().FirstOrDefault(x => x.Id == id);
+}

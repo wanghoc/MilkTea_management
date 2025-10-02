@@ -1,0 +1,10 @@
+﻿using MilkTeaShop.Domain.Interfaces;
+
+namespace MilkTeaShop.Domain.Entities;
+
+// Base drink để bắt đầu decoration chain
+public class BaseDrink : IPriceable
+{
+    public decimal GetPrice() => 0m; // Base price is 0, decorators add the actual prices
+    public string GetDescription() => "";
+}

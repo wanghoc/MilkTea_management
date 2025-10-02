@@ -1,0 +1,128 @@
+﻿using System.Windows;
+using MilkTeaShop.Infrastructure.Data;
+using MilkTeaShop.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class DatabaseHealthWindow : Window
+{
+    private readonly EfReceiptService _receiptService;
+
+    public DatabaseHealthWindow()
+    {
+        InitializeComponent();
+        _receiptService = new EfReceiptService();
+        CheckDatabaseHealth();
+    }
+
+    private void CheckDatabaseHealth()
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            
+            var dbPath = MilkTeaDbContext.GetDatabasePath();
+            var dbExists = System.IO.File.Exists(dbPath);
+            var canConnect = db.Database.CanConnect();
+            
+            var menuCount = db.MenuItems.Count();
+            var receiptCount = db.Receipts.Count();
+            var receiptItemCount = db.ReceiptItems.Count();
+            
+            DatabasePathText.Text = dbPath;
+            DatabaseExistsText.Text = dbExists ? "✅ Có" : "❌ Không";
+            CanConnectText.Text = canConnect ? "✅ Có" : "❌ Không";
+            MenuItemCountText.Text = menuCount.ToString();
+            ReceiptCountText.Text = receiptCount.ToString();
+            ReceiptItemCountText.Text = receiptItemCount.ToString();
+            
+            // Kiểm tra receipts gần nhất
+            var recentReceipts = db.Receipts
+                                  .OrderByDescending(r => r.PurchaseTime)
+                                  .Take(5)
+                                  .Select(r => new { r.Id, r.PurchaseTime, r.Total })
+                                  .ToList();
+            
+            RecentReceiptsText.Text = string.Join("\n", 
+                recentReceipts.Select(r => $"{r.Id[..8]} - {r.PurchaseTime:dd/MM/yyyy HH:mm} - {r.Total:N0}đ"));
+            
+            if (receiptCount == 0)
+            {
+                HealthStatusText.Text = "⚠️ Cảnh báo: Không có hóa đơn nào trong database";
+                HealthStatusText.Foreground = System.Windows.Media.Brushes.Orange;
+            }
+            else
+            {
+                HealthStatusText.Text = "✅ Database hoạt động bình thường";
+                HealthStatusText.Foreground = System.Windows.Media.Brushes.Green;
+            }
+        }
+        catch (Exception ex)
+        {
+            DatabasePathText.Text = "Lỗi kết nối";
+            HealthStatusText.Text = $"❌ Lỗi: {ex.Message}";
+            HealthStatusText.Foreground = System.Windows.Media.Brushes.Red;
+        }
+    }
+
+    private void RefreshHealth_Click(object sender, RoutedEventArgs e)
+    {
+        CheckDatabaseHealth();
+    }
+
+    private void RepairDatabase_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "Bạn có chắc muốn sửa chữa database?\nThao tác này sẽ tạo lại cấu trúc database nhưng giữ nguyên dữ liệu.",
+            "Xác nhận sửa chữa",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+            
+        if (result == MessageBoxResult.Yes)
+        {
+            try
+            {
+                using var db = new MilkTeaDbContext();
+                
+                // Backup existing data nếu có
+                var existingReceipts = db.Receipts.Include(r => r.Items).ToList();
+                var existingMenuItems = db.MenuItems.ToList();
+                
+                Console.WriteLine($"Backing up {existingReceipts.Count} receipts and {existingMenuItems.Count} menu items");
+                
+                // Recreate database structure
+                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
+                
+                // Restore data
+                if (existingMenuItems.Any())
+                {
+                    db.MenuItems.AddRange(existingMenuItems);
+                }
+                
+                if (existingReceipts.Any())
+                {
+                    db.Receipts.AddRange(existingReceipts);
+                }
+                
+                db.SaveChanges();
+                
+                MessageBox.Show("Đã sửa chữa database thành công!", "Thành công", 
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+                               
+                CheckDatabaseHealth();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi sửa chữa database: {ex.Message}", "Lỗi", 
+                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+}

@@ -1,0 +1,291 @@
+﻿using Microsoft.EntityFrameworkCore;
+using MilkTeaShop.Application.Services;
+using MilkTeaShop.Domain.Data;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Infrastructure.Data;
+
+namespace MilkTeaShop.Infrastructure.Services;
+
+public class EfMenuService : IMenuService
+{
+    private static bool _databaseInitialized = false;
+    private static readonly object _lock = new object();
+
+    public EfMenuService()
+    {
+        InitializeDatabase();
+    }
+
+    private void InitializeDatabase()
+    {
+        lock (_lock)
+        {
+            if (_databaseInitialized)
+                return;
+
+            try
+            {
+                using var db = new MilkTeaDbContext();
+                
+                // Kiểm tra xem database đã tồn tại chưa
+                var dbPath = MilkTeaDbContext.GetDatabasePath();
+                var dbExists = File.Exists(dbPath);
+                
+                Console.WriteLine($"Database path: {dbPath}");
+                Console.WriteLine($"Database exists: {dbExists}");
+                
+                // Chỉ tạo database nếu chưa tồn tại
+                if (!dbExists)
+                {
+                    Console.WriteLine("Creating new database...");
+                    db.Database.EnsureCreated();
+                    
+                    // Seed data từ StaticMenuData chỉ khi database mới
+                    SeedInitialData(db);
+                }
+                else
+                {
+                    Console.WriteLine("Database already exists, checking connection...");
+                    // Chỉ kiểm tra connection, không recreate
+                    var canConnect = db.Database.CanConnect();
+                    Console.WriteLine($"Database connection test: {canConnect}");
+                    
+                    if (!canConnect)
+                    {
+                        Console.WriteLine("Cannot connect to existing database, attempting to recreate...");
+                        db.Database.EnsureCreated();
+                        SeedInitialData(db);
+                    }
+                }
+                
+                // Kiểm tra số lượng records hiện tại
+                var menuCount = db.MenuItems.Count();
+                var receiptCount = db.Receipts.Count();
+                Console.WriteLine($"Current data - MenuItems: {menuCount}, Receipts: {receiptCount}");
+                
+                _databaseInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing database: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+    }
+
+    private void SeedInitialData(MilkTeaDbContext db)
+    {
+        try
+        {
+            // Chỉ seed nếu table MenuItems trống
+            if (!db.MenuItems.Any())
+            {
+                Console.WriteLine("Seeding initial menu data...");
+                
+                var items = StaticMenuData.GetAllItems();
+                
+                // Đảm bảo mỗi item có Id unique
+                foreach (var item in items)
+                {
+                    if (string.IsNullOrWhiteSpace(item.Id))
+                        item.Id = Guid.NewGuid().ToString();
+                }
+                
+                db.MenuItems.AddRange(items);
+                db.SaveChanges();
+                
+                Console.WriteLine($"Seeded {items.Count} menu items to database.");
+            }
+            else
+            {
+                Console.WriteLine("Menu items already exist, skipping seed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error seeding initial data: {ex.Message}");
+        }
+    }
+
+    public List<MenuItem> GetMilkTeaItems()
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            var items = db.MenuItems
+                         .Where(x => x.Category == MenuCategory.MilkTea && x.IsAvailable)
+                         .OrderBy(x => x.Name)
+                         .AsNoTracking()
+                         .ToList();
+            
+            Console.WriteLine($"Retrieved {items.Count} milk tea items from database");
+            return items;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting milk tea items: {ex.Message}");
+            // Fallback to static data
+            return StaticMenuData.MilkTeaItems.Where(x => x.IsAvailable).ToList();
+        }
+    }
+
+    public List<MenuItem> GetToppingItems()
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            var items = db.MenuItems
+                         .Where(x => x.Category == MenuCategory.Topping && x.IsAvailable)
+                         .OrderBy(x => x.Name)
+                         .AsNoTracking()
+                         .ToList();
+                         
+            Console.WriteLine($"Retrieved {items.Count} topping items from database");
+            return items;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting topping items: {ex.Message}");
+            // Fallback to static data
+            return StaticMenuData.ToppingItems.Where(x => x.IsAvailable).ToList();
+        }
+    }
+
+    public List<MenuItem> GetAllItems()
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            var items = db.MenuItems
+                         .Where(x => x.IsAvailable)
+                         .OrderBy(x => x.Category).ThenBy(x => x.Name)
+                         .AsNoTracking()
+                         .ToList();
+                         
+            Console.WriteLine($"Retrieved {items.Count} total items from database");
+            return items;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting all items: {ex.Message}");
+            // Fallback to static data
+            return StaticMenuData.GetAllItems().Where(x => x.IsAvailable).ToList();
+        }
+    }
+
+    public Task<List<MenuItem>> GetAllItemsAsync()
+    {
+        return Task.FromResult(GetAllItems());
+    }
+
+    public void AddNewItem(MenuItem item)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(item.Id))
+                item.Id = Guid.NewGuid().ToString();
+
+            using var db = new MilkTeaDbContext();
+            db.MenuItems.Add(item);
+            var changes = db.SaveChanges();
+            
+            Console.WriteLine($"Added new item: {item.Name} (Changes: {changes})");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding item: {ex.Message}");
+            // Fallback to static data
+            StaticMenuData.AddNewItem(item);
+        }
+    }
+
+    public MenuItem? GetItemById(string id)
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            var item = db.MenuItems.AsNoTracking().FirstOrDefault(x => x.Id == id);
+            Console.WriteLine($"Retrieved item by ID {id}: {item?.Name ?? "Not found"}");
+            return item;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting item by id: {ex.Message}");
+            // Fallback to static data
+            return StaticMenuData.GetAllItems().FirstOrDefault(x => x.Id == id);
+        }
+    }
+
+    public void UpdateItem(MenuItem item)
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            db.MenuItems.Update(item);
+            var changes = db.SaveChanges();
+            
+            Console.WriteLine($"Updated item: {item.Name} (Changes: {changes})");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating item: {ex.Message}");
+            // Fallback to static data
+            var allItems = StaticMenuData.GetAllItems();
+            var existingItem = allItems.FirstOrDefault(x => x.Id == item.Id);
+            if (existingItem != null)
+            {
+                StaticMenuData.UpdateItem(existingItem, item);
+            }
+        }
+    }
+
+    public bool RemoveItem(MenuItem item)
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            
+            var existingItem = db.MenuItems.FirstOrDefault(x => x.Id == item.Id);
+            if (existingItem != null)
+            {
+                // Soft delete - chỉ set IsAvailable = false
+                existingItem.IsAvailable = false;
+                var changes = db.SaveChanges();
+                
+                Console.WriteLine($"Removed item: {item.Name} (Changes: {changes})");
+                return true;
+            }
+            
+            Console.WriteLine($"Item not found for removal: {item.Name}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing item: {ex.Message}");
+            // Fallback to static data
+            return StaticMenuData.RemoveItem(item);
+        }
+    }
+
+    public void HardDeleteItem(string itemId)
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            
+            var item = db.MenuItems.FirstOrDefault(x => x.Id == itemId);
+            if (item != null)
+            {
+                db.MenuItems.Remove(item);
+                var changes = db.SaveChanges();
+                
+                Console.WriteLine($"Hard deleted item: {item.Name} (Changes: {changes})");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error hard deleting item: {ex.Message}");
+        }
+    }
+}

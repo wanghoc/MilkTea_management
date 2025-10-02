@@ -1,0 +1,103 @@
+﻿using System.Windows;
+using MilkTeaShop.Infrastructure.Services;
+using System.Collections.ObjectModel;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class SalesReportWindow : Window
+{
+    public ObservableCollection<SalesReportItem> SalesData { get; } = new();
+    public ObservableCollection<TopSellingItem> TopItems { get; } = new();
+    
+    private readonly IEfReceiptService _receiptService;
+
+    public SalesReportWindow()
+    {
+        InitializeComponent();
+        DataContext = this;
+        _receiptService = new EfReceiptService();
+        LoadReportData();
+    }
+
+    private void LoadReportData()
+    {
+        try
+        {
+            // Load daily sales for last 30 days
+            var receipts = _receiptService.GetReceiptsByDateRange(
+                DateTime.Now.AddDays(-30), 
+                DateTime.Now);
+
+            var dailySales = receipts
+                .GroupBy(r => r.CreatedAt.Date)
+                .Select(g => new SalesReportItem
+                {
+                    Date = g.Key,
+                    OrderCount = g.Count(),
+                    Revenue = g.Sum(r => r.Total)
+                })
+                .OrderByDescending(x => x.Date)
+                .ToList();
+
+            SalesData.Clear();
+            foreach (var item in dailySales)
+            {
+                SalesData.Add(item);
+            }
+
+            // Load top selling items
+            var topItems = _receiptService.GetTopSellingItems(10);
+            TopItems.Clear();
+            foreach (var (itemName, quantity, revenue) in topItems)
+            {
+                TopItems.Add(new TopSellingItem
+                {
+                    ItemName = itemName,
+                    Quantity = quantity,
+                    Revenue = revenue
+                });
+            }
+
+            // Update summary
+            var totalRevenue = receipts.Sum(r => r.Total);
+            var totalOrders = receipts.Count;
+            var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+            TotalRevenueText.Text = $"{totalRevenue:N0}đ";
+            TotalOrdersText.Text = totalOrders.ToString();
+            AvgOrderValueText.Text = $"{avgOrderValue:N0}đ";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi tải báo cáo: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        LoadReportData();
+    }
+}
+
+public class SalesReportItem
+{
+    public DateTime Date { get; set; }
+    public int OrderCount { get; set; }
+    public decimal Revenue { get; set; }
+    public string DateString => Date.ToString("dd/MM/yyyy");
+    public string RevenueString => $"{Revenue:N0}đ";
+}
+
+public class TopSellingItem
+{
+    public string ItemName { get; set; } = "";
+    public int Quantity { get; set; }
+    public decimal Revenue { get; set; }
+    public string RevenueString => $"{Revenue:N0}đ";
+}

@@ -1,0 +1,62 @@
+﻿using System.Windows;
+using System.Diagnostics;
+using MilkTeaShop.Infrastructure.Data;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class DatabaseViewerWindow : Window
+{
+    public DatabaseViewerWindow()
+    {
+        InitializeComponent();
+        
+        var dbPath = MilkTeaDbContext.GetDatabasePath();
+        DatabasePathTextBlock.Text = dbPath;
+    }
+
+    private void OpenDatabaseFolder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dbPath = MilkTeaDbContext.GetDatabasePath();
+            var folder = System.IO.Path.GetDirectoryName(dbPath);
+            
+            if (!string.IsNullOrEmpty(folder) && System.IO.Directory.Exists(folder))
+            {
+                Process.Start("explorer.exe", folder);
+            }
+            else
+            {
+                MessageBox.Show("Thư mục database không tồn tại!", "Lỗi", 
+                               MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Không thể mở thư mục: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void DownloadDBBrowser_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "https://sqlitebrowser.org/dl/",
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Không thể mở trình duyệt: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+}

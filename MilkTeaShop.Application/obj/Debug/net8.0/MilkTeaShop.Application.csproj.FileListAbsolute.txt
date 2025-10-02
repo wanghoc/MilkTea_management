@@ -13,3 +13,20 @@ D:\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.
 D:\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\refint\MilkTeaShop.Application.dll
 D:\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.pdb
 D:\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\ref\MilkTeaShop.Application.dll
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.sourcelink.json
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\bin\Debug\net8.0\MilkTeaShop.Application.deps.json
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\bin\Debug\net8.0\MilkTeaShop.Application.dll
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\bin\Debug\net8.0\MilkTeaShop.Application.pdb
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\bin\Debug\net8.0\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\bin\Debug\net8.0\MilkTeaShop.Domain.pdb
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.csproj.AssemblyReference.cache
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.AssemblyInfoInputs.cache
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.AssemblyInfo.cs
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.csproj.CoreCompileInputs.cache
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.sourcelink.json
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaS.D219CAFE.Up2Date
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.dll
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\refint\MilkTeaShop.Application.dll
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\MilkTeaShop.Application.pdb
+D:\Design pattern\MilkTeaShop\MilkTeaShop.Application\obj\Debug\net8.0\ref\MilkTeaShop.Application.dll

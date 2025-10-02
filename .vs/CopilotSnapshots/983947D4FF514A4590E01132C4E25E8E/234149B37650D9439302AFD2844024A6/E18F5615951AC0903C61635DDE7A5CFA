@@ -1,0 +1,86 @@
+﻿using System.Windows;
+using MilkTeaShop.Presentation.Auth;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Infrastructure.Services;
+using System;
+using System.Threading.Tasks;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class App : System.Windows.Application
+{
+    protected override async void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+
+        try
+        {
+            Console.WriteLine("Application starting...");
+
+            // Initialize database first
+            await DatabaseInitializationService.InitializeDatabase();
+
+            // Check database status
+            var dbStatus = await DatabaseInitializationService.CheckDatabaseStatus();
+            Console.WriteLine($"Database Status:");
+            Console.WriteLine($"- Can Connect: {dbStatus.CanConnect}");
+            Console.WriteLine($"- Users: {dbStatus.UserCount}");
+            Console.WriteLine($"- Menu Items: {dbStatus.MenuItemCount}");
+            Console.WriteLine($"- Receipts: {dbStatus.ReceiptCount}");
+            Console.WriteLine($"- Database Size: {dbStatus.DatabaseSizeFormatted}");
+            Console.WriteLine($"- Database Path: {dbStatus.DatabasePath}");
+
+            if (!dbStatus.CanConnect)
+            {
+                MessageBox.Show($"Không thể kết nối đến cơ sở dữ liệu!\n\nLỗi: {dbStatus.ErrorMessage}\n\nỨng dụng sẽ chạy với dữ liệu tạm thời.", 
+                              "Cảnh báo Database", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
+            // Automatically login as admin
+            var adminUser = new User 
+            { 
+                Id = 1, 
+                Username = "admin", 
+                Password = "admin123", 
+                FullName = "Quản trị viên hệ thống", 
+                Role = UserRole.Admin, 
+                IsActive = true,
+                CreatedDate = DateTime.Now,
+                LastLoginDate = DateTime.Now
+            };
+
+            CurrentUser.Instance.Login(adminUser);
+            Console.WriteLine("Auto-logged in as admin");
+
+            // Open AdminWorkWindow directly
+            var adminWindow = new AdminWorkWindow();
+            MainWindow = adminWindow;
+            adminWindow.Show();
+
+            Console.WriteLine("Application startup completed successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Critical error during application startup: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            
+            MessageBox.Show($"Lỗi nghiêm trọng khi khởi động ứng dụng:\n\n{ex.Message}\n\nỨng dụng sẽ thử chạy với chế độ cơ bản.", 
+                          "Lỗi khởi động", MessageBoxButton.OK, MessageBoxImage.Error);
+            
+            try
+            {
+                // Fallback to normal MainWindow if there's an error
+                var mainWindow = new MainWindow();
+                MainWindow = mainWindow;
+                mainWindow.Show();
+            }
+            catch (Exception fallbackEx)
+            {
+                Console.WriteLine($"Fallback also failed: {fallbackEx.Message}");
+                MessageBox.Show("Không thể khởi động ứng dụng. Vui lòng liên hệ hỗ trợ kỹ thuật.", 
+                              "Lỗi nghiêm trọng", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown();
+            }
+        }
+    }
+}

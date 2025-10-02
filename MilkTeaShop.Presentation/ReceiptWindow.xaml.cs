@@ -19,6 +19,11 @@ public partial class ReceiptWindow : Window
         set => SetValue(ReceiptTextProperty, value);
     }
 
+    public void SetReceiptContent(string receiptContent)
+    {
+        ReceiptText = receiptContent;
+    }
+
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();

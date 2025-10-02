@@ -1,0 +1,46 @@
+﻿using System.Windows;
+using MilkTeaShop.Presentation.Auth;
+using MilkTeaShop.Domain.Entities;
+using System;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class App : System.Windows.Application
+{
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+
+        try
+        {
+            // Automatically login as admin
+            var adminUser = new User
+            {
+                Id = 1,
+                Username = "admin",
+                Password = "admin123",
+                FullName = "Quản trị viên hệ thống",
+                Role = UserRole.Admin,
+                IsActive = true,
+                CreatedDate = DateTime.Now,
+                LastLoginDate = DateTime.Now
+            };
+
+            CurrentUser.Instance.Login(adminUser);
+            Console.WriteLine("Auto-logged in as admin");
+
+            // Open AdminWorkWindow directly
+            var adminWindow = new AdminWorkWindow();
+            MainWindow = adminWindow;
+            adminWindow.Show();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during auto-login: {ex.Message}");
+            // Fallback to normal MainWindow if there's an error
+            var mainWindow = new MainWindow();
+            MainWindow = mainWindow;
+            mainWindow.Show();
+        }
+    }
+}

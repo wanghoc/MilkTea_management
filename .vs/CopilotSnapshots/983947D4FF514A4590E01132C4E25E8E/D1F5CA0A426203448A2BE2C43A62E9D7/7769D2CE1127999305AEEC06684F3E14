@@ -1,0 +1,123 @@
+﻿<Window x:Class="MilkTeaShop.Presentation.DatabaseViewerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Database Viewer - WangHoc Milk Tea" Height="500" Width="700"
+        WindowStartupLocation="CenterOwner" Background="#F0F8FF">
+    
+    <Window.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Margin="0,0,0,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4169E1" Offset="0"/>
+                    <GradientStop Color="#6495ED" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Orientation="Horizontal" Margin="30,20" HorizontalAlignment="Center">
+                <TextBlock Text="🗄️" FontSize="32" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Database Viewer" FontSize="24" Style="{StaticResource HeaderTextStyle}"/>
+                    <TextBlock Text="Xem và quản lý cơ sở dữ liệu SQLite" FontSize="16" Style="{StaticResource HeaderTextStyle}" 
+                             Opacity="0.8" Margin="0,5,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- Content -->
+        <Border Grid.Row="1" Background="White" CornerRadius="15" Margin="30,0,30,0" 
+                Padding="30">
+            <StackPanel>
+                <!-- Database Path -->
+                <StackPanel Margin="0,0,0,25">
+                    <TextBlock Text="📍 Đường dẫn file database:" FontWeight="Bold" FontSize="16" 
+                             Foreground="#2E8B57" Margin="0,0,0,10"/>
+                    <Border Background="#F8F8F8" CornerRadius="8" Padding="15">
+                        <TextBlock x:Name="DatabasePathTextBlock" FontFamily="Consolas" FontSize="12" 
+                                 TextWrapping="Wrap" Foreground="#333"/>
+                    </Border>
+                </StackPanel>
+                
+                <!-- Instructions -->
+                <StackPanel Margin="0,0,0,25">
+                    <TextBlock Text="📋 Hướng dẫn truy cập database:" FontWeight="Bold" FontSize="16" 
+                             Foreground="#2E8B57" Margin="0,0,0,15"/>
+                    
+                    <Border Background="#FFF8DC" CornerRadius="12" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="🔍 Để xem và chỉnh sửa database, bạn có thể:" FontWeight="Bold" 
+                                     FontSize="14" Foreground="#D2691E" Margin="0,0,0,10"/>
+                            
+                            <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#8B4513" LineHeight="20" Margin="0,0,0,15">
+                                <Run Text="1. "/>
+                                <Run Text="Mở thư mục database" FontWeight="Bold"/>
+                                <Run Text=" để xem file milktea.db"/><LineBreak/>
+                                <Run Text="2. "/>
+                                <Run Text="Tải DB Browser for SQLite" FontWeight="Bold"/>
+                                <Run Text=" (miễn phí) để xem và chỉnh sửa"/><LineBreak/>
+                                <Run Text="3. "/>
+                                <Run Text="Mở file .db bằng DB Browser" FontWeight="Bold"/>
+                                <Run Text=" để xem dữ liệu"/>
+                            </TextBlock>
+                            
+                            <TextBlock Text="💡 DB Browser for SQLite là công cụ miễn phí tốt nhất để làm việc với SQLite database" 
+                                     FontStyle="Italic" FontSize="12" Foreground="#666"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                
+                <!-- Database Schema Info -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="🏗️ Cấu trúc database:" FontWeight="Bold" FontSize="16" 
+                             Foreground="#2E8B57" Margin="0,0,0,15"/>
+                    
+                    <Border Background="#E6F3FF" CornerRadius="8" Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="• MenuItems - Danh sách món ăn và topping" FontSize="13" Margin="0,2"/>
+                            <TextBlock Text="• Orders - Thông tin đơn hàng" FontSize="13" Margin="0,2"/>
+                            <TextBlock Text="• OrderItems - Chi tiết món trong đơn hàng" FontSize="13" Margin="0,2"/>
+                            <TextBlock Text="• Receipts - Hóa đơn thanh toán" FontSize="13" Margin="0,2"/>
+                            <TextBlock Text="• ReceiptItems - Chi tiết món trong hóa đơn" FontSize="13" Margin="0,2"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                    HorizontalAlignment="Center" Margin="30,25,30,25">
+            <Button Content="📂 Mở thư mục Database" Click="OpenDatabaseFolder_Click"
+                    Background="#32CD32" Foreground="White" 
+                    Style="{StaticResource ModernButtonStyle}" Margin="0,0,15,0"/>
+            <Button Content="⬇️ Tải DB Browser SQLite" Click="DownloadDBBrowser_Click"
+                    Background="#4169E1" Foreground="White" 
+                    Style="{StaticResource ModernButtonStyle}" Margin="0,0,15,0"/>
+            <Button Content="❌ Đóng" Click="Close_Click"
+                    Background="#FF6347" Foreground="White" 
+                    Style="{StaticResource ModernButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Window>

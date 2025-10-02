@@ -1,0 +1,149 @@
+﻿<Window x:Class="MilkTeaShop.Presentation.DatabaseHealthWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kiểm tra Sức khỏe Database - WangHoc Milk Tea" Height="550" Width="700"
+        WindowStartupLocation="CenterOwner" Background="#F0F8FF">
+    
+    <Window.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        
+        <Style x:Key="InfoLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+        </Style>
+        
+        <Style x:Key="InfoValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="10,2,0,5"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Margin="0,0,0,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4169E1" Offset="0"/>
+                    <GradientStop Color="#6495ED" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Orientation="Horizontal" Margin="30,20" HorizontalAlignment="Center">
+                <TextBlock Text="🏥" FontSize="32" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Database Health Check" FontSize="24" Style="{StaticResource HeaderTextStyle}"/>
+                    <TextBlock Text="Kiểm tra tình trạng cơ sở dữ liệu" FontSize="16" Style="{StaticResource HeaderTextStyle}" 
+                             Opacity="0.8" Margin="0,5,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Margin="30,0,30,0">
+            <StackPanel>
+                <!-- Health Status -->
+                <Border Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="🔍 Trạng thái tổng quan" FontSize="18" FontWeight="Bold" 
+                                 Foreground="#2E8B57" Margin="0,0,0,15"/>
+                        
+                        <TextBlock x:Name="HealthStatusText" Text="Đang kiểm tra..." FontSize="16" FontWeight="Bold"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Database Info -->
+                <Border Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="📊 Thông tin Database" FontSize="18" FontWeight="Bold" 
+                                 Foreground="#2E8B57" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="📍 Đường dẫn Database:" Style="{StaticResource InfoLabelStyle}"/>
+                        <TextBlock x:Name="DatabasePathText" Text="..." Style="{StaticResource InfoValueStyle}" TextWrapping="Wrap"/>
+                        
+                        <TextBlock Text="📁 File tồn tại:" Style="{StaticResource InfoLabelStyle}"/>
+                        <TextBlock x:Name="DatabaseExistsText" Text="..." Style="{StaticResource InfoValueStyle}"/>
+                        
+                        <TextBlock Text="🔗 Kết nối được:" Style="{StaticResource InfoLabelStyle}"/>
+                        <TextBlock x:Name="CanConnectText" Text="..." Style="{StaticResource InfoValueStyle}"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Data Statistics -->
+                <Border Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="📈 Thống kê Dữ liệu" FontSize="18" FontWeight="Bold" 
+                                 Foreground="#2E8B57" Margin="0,0,0,15"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="🧋 Menu Items:" Style="{StaticResource InfoLabelStyle}"/>
+                                <TextBlock x:Name="MenuItemCountText" Text="..." Style="{StaticResource InfoValueStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="🧾 Receipts (Valid/Total):" Style="{StaticResource InfoLabelStyle}"/>
+                                <TextBlock x:Name="ReceiptCountText" Text="..." Style="{StaticResource InfoValueStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="🛒 Receipt Items:" Style="{StaticResource InfoLabelStyle}"/>
+                                <TextBlock x:Name="ReceiptItemCountText" Text="..." Style="{StaticResource InfoValueStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Recent Receipts -->
+                <Border Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="🕐 Hóa đơn gần nhất" FontSize="18" FontWeight="Bold" 
+                                 Foreground="#2E8B57" Margin="0,0,0,15"/>
+                        
+                        <TextBlock x:Name="RecentReceiptsText" Text="Chưa có dữ liệu..." 
+                                 Style="{StaticResource InfoValueStyle}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                    HorizontalAlignment="Center" Margin="30,20,30,20">
+            <Button Content="🔄 Làm mới" Click="RefreshHealth_Click"
+                    Background="#4169E1" Foreground="White" 
+                    Style="{StaticResource ModernButtonStyle}" Margin="0,0,15,0"/>
+            <Button Content="🚨 Emergency Repair" Click="RepairDatabase_Click"
+                    Background="#DC143C" Foreground="White" 
+                    Style="{StaticResource ModernButtonStyle}" Margin="0,0,15,0"/>
+            <Button Content="❌ Đóng" Click="Close_Click"
+                    Background="#FF6347" Foreground="White" 
+                    Style="{StaticResource ModernButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Window>

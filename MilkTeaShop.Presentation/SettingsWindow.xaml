@@ -64,7 +64,7 @@
             
             <Button Grid.Column="0" Content="➕ Thêm món mới" Command="{Binding AddNewItemCommand}" 
                     Background="#32CD32" Foreground="White" Padding="20,12" FontWeight="Bold"
-                    FontSize="16" Margin="0,0,30,0" Style="{StaticResource ModernButtonStyle}"/>
+                    FontSize="16" Margin="0,0,15,0" Style="{StaticResource ModernButtonStyle}"/>
             
             <Border Grid.Column="1" Background="#F5F5F5" CornerRadius="10" Padding="5">
                 <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderThickness="0">

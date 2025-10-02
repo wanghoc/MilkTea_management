@@ -1,0 +1,201 @@
+﻿using System.Windows;
+using MilkTeaShop.Domain.Entities;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class App : System.Windows.Application
+{
+    private Window? mainWindow = null;
+    
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        
+        // Setup global exception handling
+        this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        
+        try
+        {
+            ShowLoginAndMainWindow();
+        }
+        catch (Exception ex)
+        {
+            HandleCriticalStartupError(ex);
+        }
+    }
+    
+    private void Application_Startup(object sender, StartupEventArgs e)
+    {
+        // This method is called from XAML, but we'll use OnStartup instead
+    }
+    
+    private void ShowLoginAndMainWindow()
+    {
+        Console.WriteLine("Application starting...");
+            
+        // Show login window first
+        var loginWindow = new LoginWindow();
+        
+        try
+        {
+            // IMPORTANT FIX: Use ShowDialog() and check result
+            Console.WriteLine("Showing login window...");
+            bool? loginResult = loginWindow.ShowDialog();
+            
+            Console.WriteLine($"Login dialog closed. Result: {loginResult}, User logged in: {CurrentUser.Instance.IsLoggedIn}");
+            
+            // Check if login was successful
+            if (loginResult == true && CurrentUser.Instance.IsLoggedIn)
+            {
+                Console.WriteLine($"Login successful for user: {CurrentUser.Instance.LoggedInUser?.Username}");
+                ShowRoleBasedWorkWindow();
+            }
+            else
+            {
+                Console.WriteLine("Login was cancelled or failed. Shutting down application.");
+                this.Shutdown();
+            }
+        }
+        catch (Exception ex)
+        {
+            HandleCriticalStartupError(ex);
+        }
+    }
+    
+    private void ShowRoleBasedWorkWindow()
+    {
+        try
+        {
+            var user = CurrentUser.Instance.LoggedInUser;
+            if (user == null)
+            {
+                Console.WriteLine("ERROR: No logged-in user when trying to show work window");
+                MessageBox.Show("Không tìm thấy thông tin người dùng đã đăng nhập!\n\nỨng dụng sẽ đóng.", 
+                               "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.Shutdown();
+                return;
+            }
+            
+            Console.WriteLine($"Creating role-based work window for user: {user.FullName} ({user.Role})");
+            
+            Window workWindow;
+            
+            // Create appropriate work window based on user role
+            try
+            {
+                workWindow = user.Role switch
+                {
+                    UserRole.Employee => new EmployeeWorkWindow(),
+                    UserRole.Manager => new ManagerWorkWindow(), 
+                    UserRole.Admin => new AdminWorkWindow(),
+                    _ => new EmployeeWorkWindow() // Default fallback
+                };
+                
+                Console.WriteLine($"Successfully created {workWindow.GetType().Name} for role: {user.Role}");
+            }
+            catch (Exception createEx)
+            {
+                Console.WriteLine($"ERROR creating work window: {createEx.Message}");
+                Console.WriteLine($"Stack trace: {createEx.StackTrace}");
+                
+                // Fallback to MainWindow if role-specific windows fail
+                MessageBox.Show($"Không thể tạo cửa sổ chuyên biệt cho vai trò {user.Role}.\n\nSẽ sử dụng giao diện mặc định.\n\nLỗi: {createEx.Message}", 
+                               "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                
+                workWindow = new MainWindow();
+                Console.WriteLine("Fallback to MainWindow");
+            }
+            
+            // Set as application's main window
+            this.MainWindow = workWindow;
+            mainWindow = workWindow;
+            
+            Console.WriteLine($"Showing work window for role: {user.Role}");
+            
+            // Show the window
+            workWindow.Show();
+            
+            // Ensure work window is activated and brought to front
+            workWindow.Activate();
+            workWindow.Focus();
+            
+            Console.WriteLine($"Work window displayed successfully for {user.Role}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"CRITICAL ERROR showing work window: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            
+            // Last resort: try to show MainWindow
+            try
+            {
+                MessageBox.Show($"Lỗi nghiêm trọng hiển thị cửa sổ làm việc: {ex.Message}\n\nSẽ thử hiển thị giao diện mặc định.", 
+                               "Lỗi nghiêm trọng", MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                var fallbackWindow = new MainWindow();
+                this.MainWindow = fallbackWindow;
+                mainWindow = fallbackWindow;
+                fallbackWindow.Show();
+                fallbackWindow.Activate();
+                
+                Console.WriteLine("Successfully showed fallback MainWindow");
+            }
+            catch (Exception fallbackEx)
+            {
+                Console.WriteLine($"ULTIMATE FAILURE: Cannot show any window: {fallbackEx.Message}");
+                MessageBox.Show($"Lỗi nghiêm trọng: Không thể hiển thị bất kỳ cửa sổ nào!\n\nỨng dụng sẽ đóng.\n\nLỗi: {fallbackEx.Message}",
+                              "Lỗi nghiêm trọng", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.Shutdown();
+            }
+        }
+    }
+    
+    private void HandleCriticalStartupError(Exception ex)
+    {
+        Console.WriteLine($"CRITICAL STARTUP ERROR: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        
+        try
+        {
+            MessageBox.Show(
+                $"Lỗi nghiêm trọng khi khởi động ứng dụng:\n\n{ex.Message}\n\nStack trace:\n{ex.StackTrace}",
+                "Lỗi khởi động nghiêm trọng",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        catch
+        {
+            // Last resort if even showing message box fails
+        }
+        
+        this.Shutdown(1);
+    }
+    
+    private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        Console.WriteLine($"Unhandled dispatcher exception: {e.Exception.Message}");
+        Console.WriteLine($"Stack trace: {e.Exception.StackTrace}");
+        
+        MessageBox.Show(
+            $"Lỗi không xử lý được:\n\n{e.Exception.Message}\n\nStack trace:\n{e.Exception.StackTrace}",
+            "Lỗi ứng dụng",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+            
+        e.Handled = true;
+    }
+    
+    private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        var ex = e.ExceptionObject as Exception;
+        Console.WriteLine($"Unhandled domain exception: {ex?.Message ?? "Unknown error"}");
+        Console.WriteLine($"Stack trace: {ex?.StackTrace}");
+        
+        MessageBox.Show(
+            $"Lỗi nghiêm trọng không xử lý được:\n\n{ex?.Message ?? "Unknown error"}\n\nỨng dụng sẽ đóng.",
+            "Lỗi nghiêm trọng",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+    }
+}

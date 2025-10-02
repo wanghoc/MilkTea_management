@@ -1,0 +1,135 @@
+﻿using Microsoft.EntityFrameworkCore;
+using MilkTeaShop.Application.Services;
+using MilkTeaShop.Domain.Data;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Infrastructure.Data;
+
+namespace MilkTeaShop.Infrastructure.Services;
+
+public class EfMenuService : IMenuService
+{
+    public EfMenuService()
+    {
+        InitializeDatabase();
+    }
+
+    private void InitializeDatabase()
+    {
+        using var db = new MilkTeaDbContext();
+        
+        // Tạo database và tables
+        db.Database.EnsureCreated();
+        
+        // Seed data từ StaticMenuData nếu database trống
+        if (!db.MenuItems.Any())
+        {
+            Console.WriteLine("Seeding database with initial data...");
+            
+            var items = StaticMenuData.GetAllItems();
+            
+            // Đảm bảo mỗi item có Id
+            foreach (var item in items)
+            {
+                if (string.IsNullOrWhiteSpace(item.Id))
+                    item.Id = Guid.NewGuid().ToString();
+            }
+            
+            db.MenuItems.AddRange(items);
+            db.SaveChanges();
+            
+            Console.WriteLine($"Seeded {items.Count} menu items to database.");
+        }
+        
+        Console.WriteLine($"Database initialized at: {MilkTeaDbContext.GetDatabasePath()}");
+    }
+
+    public List<MenuItem> GetMilkTeaItems()
+    {
+        using var db = new MilkTeaDbContext();
+        return db.MenuItems
+                 .Where(x => x.Category == MenuCategory.MilkTea && x.IsAvailable)
+                 .OrderBy(x => x.Name)
+                 .AsNoTracking()
+                 .ToList();
+    }
+
+    public List<MenuItem> GetToppingItems()
+    {
+        using var db = new MilkTeaDbContext();
+        return db.MenuItems
+                 .Where(x => x.Category == MenuCategory.Topping && x.IsAvailable)
+                 .OrderBy(x => x.Name)
+                 .AsNoTracking()
+                 .ToList();
+    }
+
+    public List<MenuItem> GetAllItems()
+    {
+        using var db = new MilkTeaDbContext();
+        return db.MenuItems
+                 .Where(x => x.IsAvailable)
+                 .OrderBy(x => x.Category).ThenBy(x => x.Name)
+                 .AsNoTracking()
+                 .ToList();
+    }
+
+    public void AddNewItem(MenuItem item)
+    {
+        if (string.IsNullOrWhiteSpace(item.Id))
+            item.Id = Guid.NewGuid().ToString();
+
+        using var db = new MilkTeaDbContext();
+        db.MenuItems.Add(item);
+        db.SaveChanges();
+        
+        Console.WriteLine($"Added new item: {item.Name}");
+    }
+
+    public MenuItem? GetItemById(string id)
+    {
+        using var db = new MilkTeaDbContext();
+        return db.MenuItems.AsNoTracking().FirstOrDefault(x => x.Id == id);
+    }
+
+    public void UpdateItem(MenuItem item)
+    {
+        using var db = new MilkTeaDbContext();
+        db.MenuItems.Update(item);
+        db.SaveChanges();
+        
+        Console.WriteLine($"Updated item: {item.Name}");
+    }
+
+    public bool RemoveItem(MenuItem item)
+    {
+        using var db = new MilkTeaDbContext();
+        
+        var existingItem = db.MenuItems.FirstOrDefault(x => x.Id == item.Id);
+        if (existingItem != null)
+        {
+            // Soft delete - chỉ set IsAvailable = false
+            existingItem.IsAvailable = false;
+            db.SaveChanges();
+            
+            Console.WriteLine($"Removed item: {item.Name}");
+            return true;
+        }
+        
+        return false;
+    }
+
+    public void HardDeleteItem(string itemId)
+    {
+        using var db = new MilkTeaDbContext();
+        
+        var item = db.MenuItems.FirstOrDefault(x => x.Id == itemId);
+        if (item != null)
+        {
+            db.MenuItems.Remove(item);
+            db.SaveChanges();
+            
+            Console.WriteLine($"Hard deleted item: {item.Name}");
+        }
+    }
+}

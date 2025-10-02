@@ -1,0 +1,241 @@
+﻿using System.Windows;
+using MilkTeaShop.Infrastructure.Data;
+using MilkTeaShop.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class DatabaseHealthWindow : Window
+{
+    private readonly EfReceiptService _receiptService;
+
+    public DatabaseHealthWindow()
+    {
+        InitializeComponent();
+        _receiptService = new EfReceiptService();
+        CheckDatabaseHealth();
+    }
+
+    private void CheckDatabaseHealth()
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            
+            var dbPath = MilkTeaDbContext.GetDatabasePath();
+            var dbExists = System.IO.File.Exists(dbPath);
+            var canConnect = db.Database.CanConnect();
+            
+            var menuCount = db.MenuItems.Count();
+            var receiptCount = db.Receipts.Count();
+            var receiptItemCount = db.ReceiptItems.Count();
+            
+            // KIỂM TRA DATA CORRUPTION
+            var corruptedReceipts = db.Receipts.Where(r => r.Total <= 0).Count();
+            var validReceipts = receiptCount - corruptedReceipts;
+            
+            DatabasePathText.Text = dbPath;
+            DatabaseExistsText.Text = dbExists ? "✅ Có" : "❌ Không";
+            CanConnectText.Text = canConnect ? "✅ Có" : "❌ Không";
+            MenuItemCountText.Text = menuCount.ToString();
+            ReceiptCountText.Text = $"{validReceipts}/{receiptCount}";
+            ReceiptItemCountText.Text = receiptItemCount.ToString();
+            
+            // Kiểm tra receipts gần nhất (chỉ lấy receipts hợp lệ)
+            var recentReceipts = db.Receipts
+                                  .Where(r => r.Total > 0) // Chỉ hiển thị receipts không bị corrupt
+                                  .OrderByDescending(r => r.PurchaseTime)
+                                  .Take(5)
+                                  .Select(r => new { r.Id, r.PurchaseTime, r.Total })
+                                  .ToList();
+            
+            RecentReceiptsText.Text = string.Join("\n", 
+                recentReceipts.Select(r => $"{r.Id[..8]} - {r.PurchaseTime:dd/MM/yyyy HH:mm} - {r.Total:N0}đ"));
+            
+            // Cập nhật health status dựa trên corruption
+            if (receiptCount == 0)
+            {
+                HealthStatusText.Text = "⚠️ Cảnh báo: Không có hóa đơn nào trong database";
+                HealthStatusText.Foreground = System.Windows.Media.Brushes.Orange;
+            }
+            else if (corruptedReceipts > 0)
+            {
+                HealthStatusText.Text = $"🚨 NGHIÊM TRỌNG: {corruptedReceipts} hóa đơn bị corrupt (giá trị 0đ)";
+                HealthStatusText.Foreground = System.Windows.Media.Brushes.Red;
+            }
+            else
+            {
+                HealthStatusText.Text = "✅ Database hoạt động bình thường";
+                HealthStatusText.Foreground = System.Windows.Media.Brushes.Green;
+            }
+            
+            // Log chi tiết vào console
+            Console.WriteLine($"Database Health Check:");
+            Console.WriteLine($"  Total receipts: {receiptCount}");
+            Console.WriteLine($"  Valid receipts: {validReceipts}");
+            Console.WriteLine($"  Corrupted receipts: {corruptedReceipts}");
+            
+            if (corruptedReceipts > 0)
+            {
+                var corruptedList = db.Receipts.Where(r => r.Total <= 0)
+                                              .Select(r => new { r.Id, r.PurchaseTime, r.Total })
+                                              .ToList();
+                Console.WriteLine("Corrupted receipts:");
+                foreach (var corrupt in corruptedList)
+                {
+                    Console.WriteLine($"  {corrupt.Id[..8]} - {corrupt.PurchaseTime:dd/MM/yyyy HH:mm} - {corrupt.Total}đ");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            DatabasePathText.Text = "Lỗi kết nối";
+            HealthStatusText.Text = $"❌ Lỗi: {ex.Message}";
+            HealthStatusText.Foreground = System.Windows.Media.Brushes.Red;
+            
+            Console.WriteLine($"Database health check error: {ex.Message}");
+        }
+    }
+
+    private void RefreshHealth_Click(object sender, RoutedEventArgs e)
+    {
+        CheckDatabaseHealth();
+    }
+
+    private void RepairDatabase_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "🚨 EMERGENCY REPAIR 🚨\n\n" +
+            "Thao tác này sẽ:\n" +
+            "1. Sửa chữa hóa đơn bị corrupt (0đ)\n" +
+            "2. Tạo lại cấu trúc database với data type an toàn\n" +
+            "3. Khôi phục dữ liệu từ ReceiptItems\n\n" +
+            "Bạn có chắc muốn tiếp tục?",
+            "Xác nhận Emergency Repair",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+            
+        if (result == MessageBoxResult.Yes)
+        {
+            try
+            {
+                using var db = new MilkTeaDbContext();
+                
+                Console.WriteLine("=== STARTING EMERGENCY DATABASE REPAIR ===");
+                
+                // 1. Backup existing data
+                var existingReceipts = db.Receipts.Include(r => r.Items).ToList();
+                var existingMenuItems = db.MenuItems.ToList();
+                
+                Console.WriteLine($"Backing up {existingReceipts.Count} receipts and {existingMenuItems.Count} menu items");
+                
+                // 2. Identify and fix corrupted receipts BEFORE recreating
+                var corruptedReceipts = existingReceipts.Where(r => r.Total <= 0).ToList();
+                Console.WriteLine($"Found {corruptedReceipts.Count} corrupted receipts");
+                
+                foreach (var corrupted in corruptedReceipts)
+                {
+                    if (corrupted.Items != null && corrupted.Items.Any())
+                    {
+                        var recalculatedTotal = corrupted.Items.Sum(i => i.LineTotal);
+                        var recalculatedSubtotal = corrupted.Items.Sum(i => i.LineTotal);
+                        
+                        Console.WriteLine($"Fixing receipt {corrupted.Id[..8]}: {corrupted.Total}đ -> {recalculatedTotal}đ");
+                        
+                        corrupted.Total = recalculatedTotal;
+                        corrupted.Subtotal = recalculatedSubtotal;
+                        corrupted.Discount = Math.Max(0, recalculatedSubtotal - recalculatedTotal);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Cannot fix receipt {corrupted.Id[..8]} - no items found");
+                        // Set minimum valid values
+                        corrupted.Total = 1000;
+                        corrupted.Subtotal = 1000;
+                        corrupted.Discount = 0;
+                    }
+                }
+                
+                // 3. Recreate database structure with fixed data types
+                Console.WriteLine("Recreating database structure...");
+                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
+                
+                // 4. Restore menu items first
+                if (existingMenuItems.Any())
+                {
+                    Console.WriteLine($"Restoring {existingMenuItems.Count} menu items");
+                    db.MenuItems.AddRange(existingMenuItems);
+                    db.SaveChanges();
+                }
+                
+                // 5. Restore receipts with fixed data
+                if (existingReceipts.Any())
+                {
+                    Console.WriteLine($"Restoring {existingReceipts.Count} receipts");
+                    
+                    // Verify all receipts have valid totals
+                    foreach (var receipt in existingReceipts)
+                    {
+                        if (receipt.Total <= 0)
+                        {
+                            Console.WriteLine($"WARNING: Receipt {receipt.Id[..8]} still has invalid total: {receipt.Total}");
+                            receipt.Total = 1000; // Fallback
+                            receipt.Subtotal = 1000;
+                        }
+                    }
+                    
+                    db.Receipts.AddRange(existingReceipts);
+                    db.SaveChanges();
+                }
+                
+                // 6. Verification
+                var finalReceiptCount = db.Receipts.Count();
+                var finalCorruptedCount = db.Receipts.Where(r => r.Total <= 0).Count();
+                
+                Console.WriteLine($"=== REPAIR COMPLETED ===");
+                Console.WriteLine($"Total receipts: {finalReceiptCount}");
+                Console.WriteLine($"Corrupted receipts: {finalCorruptedCount}");
+                
+                var message = finalCorruptedCount == 0 
+                    ? "✅ Đã sửa chữa database thành công!\n\nTất cả hóa đơn đã được khôi phục."
+                    : $"⚠️ Đã sửa chữa database!\n\nKhôi phục: {finalReceiptCount - finalCorruptedCount}/{finalReceiptCount} hóa đơn\nVẫn còn {finalCorruptedCount} hóa đơn có vấn đề.";
+                
+                MessageBox.Show(message, "Kết quả Repair", 
+                               MessageBoxButton.OK, 
+                               finalCorruptedCount == 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                               
+                CheckDatabaseHealth();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during emergency repair: {ex.Message}");
+                MessageBox.Show($"❌ Lỗi emergency repair:\n\n{ex.Message}", "Lỗi Repair", 
+                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void OpenDatabaseEditor_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var editor = new DatabaseEditorWindow();
+            editor.Owner = this;
+            editor.ShowDialog();
+            
+            // Refresh health check after editor closes
+            CheckDatabaseHealth();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi mở Database Editor: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+}

@@ -1,24 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "D:\\MilkTeaShop\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj": {}
+    "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj": {}
   },
   "projects": {
-    "D:\\MilkTeaShop\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj": {
+    "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\MilkTeaShop\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj",
+        "projectUniqueName": "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj",
         "projectName": "MilkTeaShop.Application",
-        "projectPath": "D:\\MilkTeaShop\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj",
+        "projectPath": "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj",
         "packagesPath": "C:\\Users\\quang\\.nuget\\packages\\",
-        "outputPath": "D:\\MilkTeaShop\\MilkTeaShop.Application\\obj\\",
+        "outputPath": "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\DevExpress\\Components\\Offline Packages",
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "D:\\MilkTeaShop\\NuGet.Config",
+          "D:\\Design pattern\\MilkTeaShop\\NuGet.Config",
           "C:\\Users\\quang\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
@@ -34,8 +34,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj": {
-                "projectPath": "D:\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj"
+              "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj": {
+                "projectPath": "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj"
               }
             }
           }
@@ -75,21 +75,21 @@
         }
       }
     },
-    "D:\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj": {
+    "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj",
+        "projectUniqueName": "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj",
         "projectName": "MilkTeaShop.Domain",
-        "projectPath": "D:\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj",
+        "projectPath": "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Domain\\MilkTeaShop.Domain.csproj",
         "packagesPath": "C:\\Users\\quang\\.nuget\\packages\\",
-        "outputPath": "D:\\MilkTeaShop\\MilkTeaShop.Domain\\obj\\",
+        "outputPath": "D:\\Design pattern\\MilkTeaShop\\MilkTeaShop.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\DevExpress\\Components\\Offline Packages",
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "D:\\MilkTeaShop\\NuGet.Config",
+          "D:\\Design pattern\\MilkTeaShop\\NuGet.Config",
           "C:\\Users\\quang\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",

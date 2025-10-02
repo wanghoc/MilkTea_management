@@ -9,8 +9,11 @@ public interface IMenuService
     List<MenuItem> GetMilkTeaItems();
     List<MenuItem> GetToppingItems();
     List<MenuItem> GetAllItems();
+    Task<List<MenuItem>> GetAllItemsAsync(); // Add async version for better UI responsiveness
     void AddNewItem(MenuItem item);
     MenuItem? GetItemById(string id);
+    void UpdateItem(MenuItem item);
+    bool RemoveItem(MenuItem item);
 }
 
 public class MenuService : IMenuService
@@ -21,10 +24,28 @@ public class MenuService : IMenuService
     
     public List<MenuItem> GetAllItems() => StaticMenuData.GetAllItems().Where(x => x.IsAvailable).ToList();
     
+    public Task<List<MenuItem>> GetAllItemsAsync() => Task.FromResult(GetAllItems());
+    
     public void AddNewItem(MenuItem item)
     {
         StaticMenuData.AddNewItem(item);
     }
     
     public MenuItem? GetItemById(string id) => StaticMenuData.GetAllItems().FirstOrDefault(x => x.Id == id);
+
+    public void UpdateItem(MenuItem item)
+    {
+        // For StaticMenuData, we need to find and update the item
+        var allItems = StaticMenuData.GetAllItems();
+        var existingItem = allItems.FirstOrDefault(x => x.Id == item.Id);
+        if (existingItem != null)
+        {
+            StaticMenuData.UpdateItem(existingItem, item);
+        }
+    }
+
+    public bool RemoveItem(MenuItem item)
+    {
+        return StaticMenuData.RemoveItem(item);
+    }
 }

@@ -1,0 +1,141 @@
+﻿using MilkTeaShop.Application.Services;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Infrastructure.Services;
+using System;
+using System.Linq;
+using System.Windows;
+
+namespace MilkTeaShop.Presentation
+{
+    public partial class UserManagementWindow : Window
+    {
+        private readonly IUserService _userService;
+        private readonly bool _canEditUsers;
+
+        public UserManagementWindow(bool canEditUsers = false)
+        {
+            InitializeComponent();
+            _userService = new EfUserService(); // Use EF-based service
+            _canEditUsers = canEditUsers;
+            LoadUsers();
+        }
+
+        private async void LoadUsers()
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersAsync();
+                UsersDataGrid.ItemsSource = users.ToList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tải danh sách người dùng: {ex.Message}", "Lỗi", 
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void AddUser_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_canEditUsers)
+            {
+                MessageBox.Show("Bạn không có quyền thêm người dùng.", "Không đủ quyền", 
+                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new AddEditUserDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    await _userService.CreateUserAsync(dialog.User);
+                    LoadUsers();
+                    MessageBox.Show("Thêm người dùng thành công!", "Thành công", 
+                                  MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi thêm người dùng: {ex.Message}", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async void EditUser_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_canEditUsers)
+            {
+                MessageBox.Show("Bạn không có quyền sửa người dùng.", "Không đủ quyền", 
+                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (UsersDataGrid.SelectedItem is User selectedUser)
+            {
+                var dialog = new AddEditUserDialog(selectedUser);
+                if (dialog.ShowDialog() == true)
+                {
+                    try
+                    {
+                        await _userService.UpdateUserAsync(dialog.User);
+                        LoadUsers();
+                        MessageBox.Show("Cập nhật người dùng thành công!", "Thành công", 
+                                      MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi khi cập nhật người dùng: {ex.Message}", "Lỗi", 
+                                      MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn người dùng để sửa.", "Thông báo", 
+                              MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private async void DeleteUser_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_canEditUsers)
+            {
+                MessageBox.Show("Bạn không có quyền xóa người dùng.", "Không đủ quyền", 
+                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (UsersDataGrid.SelectedItem is User selectedUser)
+            {
+                var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa người dùng '{selectedUser.FullName}'?", 
+                                           "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                
+                if (result == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        await _userService.DeleteUserAsync(selectedUser.Id);
+                        LoadUsers();
+                        MessageBox.Show("Xóa người dùng thành công!", "Thành công", 
+                                      MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi khi xóa người dùng: {ex.Message}", "Lỗi", 
+                                      MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn người dùng để xóa.", "Thông báo", 
+                              MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+    }
+}

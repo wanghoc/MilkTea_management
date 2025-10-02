@@ -1,0 +1,163 @@
+﻿using MilkTeaShop.Domain.Entities;
+using System;
+using System.Windows;
+
+namespace MilkTeaShop.Presentation
+{
+    public partial class AddEditUserDialog : Window
+    {
+        public User User { get; private set; }
+        private readonly bool _isEdit;
+
+        public AddEditUserDialog(User? user = null)
+        {
+            InitializeComponent();
+            _isEdit = user != null;
+            
+            if (_isEdit)
+            {
+                TitleText.Text = "SỬA NGƯỜI DÙNG";
+                User = user!;
+                LoadUserData();
+            }
+            else
+            {
+                TitleText.Text = "THÊM NGƯỜI DÙNG";
+                User = new User();
+            }
+        }
+
+        private void LoadUserData()
+        {
+            UsernameTextBox.Text = User.Username;
+            FullNameTextBox.Text = User.FullName;
+            
+            // Set the selected role in ComboBox
+            foreach (System.Windows.Controls.ComboBoxItem item in RoleComboBox.Items)
+            {
+                if (item.Tag.ToString() == User.Role.ToString())
+                {
+                    RoleComboBox.SelectedItem = item;
+                    break;
+                }
+            }
+            
+            // For edit mode, don't require password change
+            PasswordBox.Password = ""; // Don't show existing password
+        }
+
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Validate input
+                if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
+                {
+                    MessageBox.Show("Vui lòng nhập tên đăng nhập.", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    UsernameTextBox.Focus();
+                    return;
+                }
+
+                if (!_isEdit && string.IsNullOrWhiteSpace(PasswordBox.Password))
+                {
+                    MessageBox.Show("Vui lòng nhập mật khẩu.", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    PasswordBox.Focus();
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(FullNameTextBox.Text))
+                {
+                    MessageBox.Show("Vui lòng nhập họ tên.", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    FullNameTextBox.Focus();
+                    return;
+                }
+
+                if (RoleComboBox.SelectedItem == null)
+                {
+                    MessageBox.Show("Vui lòng chọn vai trò.", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    RoleComboBox.Focus();
+                    return;
+                }
+
+                // Additional validation
+                var username = UsernameTextBox.Text.Trim();
+                var fullName = FullNameTextBox.Text.Trim();
+                var password = PasswordBox.Password;
+
+                if (username.Length < 3)
+                {
+                    MessageBox.Show("Tên đăng nhập phải có ít nhất 3 ký tự.", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    UsernameTextBox.Focus();
+                    return;
+                }
+
+                if (!_isEdit && password.Length < 3)
+                {
+                    MessageBox.Show("Mật khẩu phải có ít nhất 3 ký tự.", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    PasswordBox.Focus();
+                    return;
+                }
+
+                if (fullName.Length < 2)
+                {
+                    MessageBox.Show("Họ tên phải có ít nhất 2 ký tự.", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    FullNameTextBox.Focus();
+                    return;
+                }
+
+                // Update user data
+                User.Username = username;
+                User.FullName = fullName;
+                
+                // Only update password if it's provided (for edit) or required (for new)
+                if (!_isEdit || !string.IsNullOrWhiteSpace(password))
+                {
+                    User.Password = password;
+                }
+
+                // Parse role
+                var selectedRole = ((System.Windows.Controls.ComboBoxItem)RoleComboBox.SelectedItem).Tag.ToString();
+                if (Enum.TryParse<UserRole>(selectedRole, out var role))
+                {
+                    User.Role = role;
+                }
+                else
+                {
+                    MessageBox.Show("Vai trò không hợp lệ.", "Lỗi", 
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Ensure proper initialization for new users
+                if (!_isEdit)
+                {
+                    User.IsActive = true;
+                    User.CreatedDate = DateTime.Now;
+                }
+
+                DialogResult = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddEditUserDialog Save_Click: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                MessageBox.Show($"Lỗi khi lưu thông tin người dùng:\n\n{ex.Message}\n\nVui lòng thử lại.", "Lỗi", 
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
+    }
+}

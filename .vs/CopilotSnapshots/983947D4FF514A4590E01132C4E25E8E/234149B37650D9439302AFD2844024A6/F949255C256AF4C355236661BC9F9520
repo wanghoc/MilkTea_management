@@ -1,0 +1,37 @@
+﻿using MilkTeaShop.Presentation.Auth;
+using System;
+using System.Windows;
+
+namespace MilkTeaShop.Presentation.Helpers
+{
+    public static class LoginDebugHelper
+    {
+        public static void ShowLoginDiagnosticsWindow()
+        {
+            try
+            {
+                var diagnosticsWindow = new LoginDiagnosticsWindow();
+                diagnosticsWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi mở cửa sổ chẩn đoán: {ex.Message}", "Lỗi", 
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public static string GetCurrentUserInfo()
+        {
+            if (!CurrentUser.Instance.IsLoggedIn)
+            {
+                return "Chưa đăng nhập";
+            }
+
+            var user = CurrentUser.Instance.LoggedInUser!;
+            return $"Tên: {user.FullName}\n" +
+                   $"Tài khoản: {user.Username}\n" +
+                   $"Vai trò: {user.GetRoleDisplayName()}\n" +
+                   $"Đăng nhập lần cuối: {user.LastLoginDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có"}";
+        }
+    }
+}

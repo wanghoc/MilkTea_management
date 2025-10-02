@@ -1,0 +1,231 @@
+﻿<Window x:Class="MilkTeaShop.Presentation.DatabaseEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Database Editor - WangHoc Milk Tea" Height="800" Width="1400"
+        WindowStartupLocation="CenterOwner" Background="#F0F8FF">
+    
+    <Window.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        
+        <Style x:Key="CorruptedRowStyle" TargetType="ListViewItem">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCorrupted}" Value="True">
+                    <Setter Property="Background" Value="#FFCCCC"/>
+                    <Setter Property="Foreground" Value="#CC0000"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Margin="0,0,0,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#DC143C" Offset="0"/>
+                    <GradientStop Color="#FF6347" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Orientation="Horizontal" Margin="30,15" HorizontalAlignment="Center">
+                <TextBlock Text="🛠️" FontSize="28" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Database Editor" FontSize="20" Style="{StaticResource HeaderTextStyle}"/>
+                    <TextBlock Text="Chỉnh sửa và sửa chữa dữ liệu database" FontSize="14" Style="{StaticResource HeaderTextStyle}" 
+                             Opacity="0.8" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- Content -->
+        <Grid Grid.Row="1" Margin="20,0,20,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Receipts List -->
+            <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <TextBlock Text="📋 Danh sách Hóa đơn" FontSize="16" FontWeight="Bold" 
+                                 Foreground="#2E8B57" VerticalAlignment="Center"/>
+                        <Button Content="🔄" Click="Refresh_Click" Background="#4169E1" Foreground="White" 
+                               Style="{StaticResource ModernButtonStyle}" Margin="15,0,0,0" ToolTip="Làm mới"/>
+                        <Button Content="🚨 Fix All Corrupt" Click="FixAllCorrupted_Click" Background="#DC143C" Foreground="White" 
+                               Style="{StaticResource ModernButtonStyle}" Margin="10,0,0,0"/>
+                        <Button Content="📂 Open DB File" Click="OpenDatabaseFile_Click" Background="#FF8C00" Foreground="White" 
+                               Style="{StaticResource ModernButtonStyle}" Margin="10,0,0,0"/>
+                    </StackPanel>
+                    
+                    <ListView x:Name="ReceiptsList" ItemsSource="{Binding Receipts}" 
+                             SelectedItem="{Binding SelectedReceipt}" Height="450"
+                             ItemContainerStyle="{StaticResource CorruptedRowStyle}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="ID" Width="80">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ShortId}" FontFamily="Consolas" FontWeight="Bold"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Thời gian" Width="130">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding PurchaseTimeString}" FontSize="11"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Tổng tiền" Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TotalString}" FontWeight="Bold" 
+                                                     HorizontalAlignment="Right"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Items" Width="60">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ItemCount}" HorizontalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Status" Width="80">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StatusString}" FontWeight="Bold"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </StackPanel>
+            </Border>
+            
+            <!-- Receipt Editor -->
+            <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="15" Margin="10,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="✏️ Chỉnh sửa Hóa đơn" FontSize="16" FontWeight="Bold" 
+                             Foreground="#2E8B57" Margin="0,0,0,15"/>
+                    
+                    <StackPanel DataContext="{Binding SelectedReceipt}">
+                        <TextBlock Text="Receipt ID:" FontWeight="Bold" Margin="0,5,0,2"/>
+                        <TextBox Text="{Binding Id}" IsReadOnly="True" Background="#F5F5F5" FontFamily="Consolas"/>
+                        
+                        <TextBlock Text="Purchase Time:" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox Text="{Binding PurchaseTimeString}" IsReadOnly="True" Background="#F5F5F5"/>
+                        
+                        <TextBlock Text="Subtotal (đ):" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox Text="{Binding Subtotal, UpdateSourceTrigger=PropertyChanged}"/>
+                        
+                        <TextBlock Text="Discount (đ):" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox Text="{Binding Discount, UpdateSourceTrigger=PropertyChanged}"/>
+                        
+                        <TextBlock Text="Total (đ):" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox Text="{Binding Total, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold"/>
+                        
+                        <TextBlock Text="Customer Note:" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox Text="{Binding CustomerNote, UpdateSourceTrigger=PropertyChanged}" 
+                               Height="50" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        
+                        <TextBlock Text="Payment Method:" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <ComboBox Text="{Binding PaymentMethod, UpdateSourceTrigger=PropertyChanged}" IsEditable="True">
+                            <ComboBoxItem Content="Cash"/>
+                            <ComboBoxItem Content="Card"/>
+                            <ComboBoxItem Content="Transfer"/>
+                        </ComboBox>
+                    </StackPanel>
+                    
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                        <Button Content="💾 Save" Click="SaveReceipt_Click" Background="#32CD32" Foreground="White" 
+                               Style="{StaticResource ModernButtonStyle}" Margin="0,0,5,0"/>
+                        <Button Content="🔧 Auto Fix" Click="AutoFixReceipt_Click" Background="#FF8C00" Foreground="White" 
+                               Style="{StaticResource ModernButtonStyle}" Margin="5,0"/>
+                        <Button Content="🗑️ Delete" Click="DeleteReceipt_Click" Background="#DC143C" Foreground="White" 
+                               Style="{StaticResource ModernButtonStyle}" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    
+                    <!-- Receipt Items -->
+                    <TextBlock Text="📦 Receipt Items" FontSize="14" FontWeight="Bold" 
+                             Foreground="#2E8B57" Margin="0,20,0,10"/>
+                    
+                    <ListView ItemsSource="{Binding ReceiptItems}" Height="200" FontSize="11">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Item" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DrinkName}" TextWrapping="Wrap"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Size" Width="50">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Size}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Qty" Width="40">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Quantity}" HorizontalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Price" Width="70">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding UnitPriceString}" HorizontalAlignment="Right"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Total" Width="70">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding LineTotalString}" FontWeight="Bold" 
+                                                     HorizontalAlignment="Right"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </StackPanel>
+            </Border>
+        </Grid>
+        
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#E0E0E0" Padding="20,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Status:" FontWeight="Bold" Margin="0,0,10,0"/>
+                <TextBlock x:Name="StatusText" Text="Ready" Foreground="#2E8B57"/>
+                <TextBlock Text="| Database Location:" FontWeight="Bold" Margin="30,0,10,0"/>
+                <TextBlock Text="{Binding Source={x:Static local:MilkTeaDbContext.GetDatabasePath}}" 
+                          FontFamily="Consolas" FontSize="10"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

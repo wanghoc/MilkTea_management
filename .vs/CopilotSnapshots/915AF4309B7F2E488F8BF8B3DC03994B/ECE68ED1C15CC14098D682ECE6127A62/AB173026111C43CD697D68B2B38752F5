@@ -1,0 +1,79 @@
+﻿using Microsoft.EntityFrameworkCore;
+using MilkTeaShop.Domain.Entities;
+using System.IO;
+using System.Text.Json;
+
+namespace MilkTeaShop.Infrastructure.Data;
+
+public class MilkTeaDbContext : DbContext
+{
+    // Đặt database trong thư mục dự án
+    private static readonly string DbFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+    private static readonly string DbPath = Path.Combine(DbFolder, "milktea.db");
+
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<Receipt> Receipts => Set<Receipt>();
+    public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();
+
+    public MilkTeaDbContext() { }
+
+    public MilkTeaDbContext(DbContextOptions<MilkTeaDbContext> options) : base(options) { }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            // Tạo thư mục nếu chưa tồn tại
+            Directory.CreateDirectory(DbFolder);
+            optionsBuilder.UseSqlite($"Data Source={DbPath}");
+        }
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // MenuItem Configuration
+        var menuItem = modelBuilder.Entity<MenuItem>();
+        menuItem.HasKey(x => x.Id);
+        menuItem.Property(x => x.Name).HasMaxLength(256).IsRequired();
+        menuItem.Property(x => x.Description).HasMaxLength(1024);
+        menuItem.Property(x => x.ImagePath).HasMaxLength(512);
+        menuItem.Property(x => x.BasePrice).HasColumnType("DECIMAL(18,2)");
+        menuItem.Property(x => x.Category).HasConversion<int>();
+        menuItem.Property(x => x.IsAvailable).HasDefaultValue(true);
+
+        // Receipt Configuration
+        var receipt = modelBuilder.Entity<Receipt>();
+        receipt.HasKey(x => x.Id);
+        receipt.Property(x => x.OrderId).HasMaxLength(36).IsRequired();
+        receipt.Property(x => x.CreatedAt).IsRequired();
+        receipt.Property(x => x.Subtotal).HasColumnType("DECIMAL(18,2)");
+        receipt.Property(x => x.Discount).HasColumnType("DECIMAL(18,2)");
+        receipt.Property(x => x.Total).HasColumnType("DECIMAL(18,2)");
+        receipt.Property(x => x.CustomerNote).HasMaxLength(1024);
+        receipt.Property(x => x.ReceiptContent).HasColumnType("TEXT");
+        receipt.Property(x => x.PaymentMethod).HasMaxLength(50);
+
+        // ReceiptItem Configuration
+        var receiptItem = modelBuilder.Entity<ReceiptItem>();
+        receiptItem.HasKey(x => x.Id);
+        receiptItem.Property(x => x.ReceiptId).HasMaxLength(36).IsRequired();
+        receiptItem.Property(x => x.DrinkName).HasMaxLength(256).IsRequired();
+        receiptItem.Property(x => x.Size).HasMaxLength(20);
+        receiptItem.Property(x => x.SugarLevel).HasMaxLength(10);
+        receiptItem.Property(x => x.IceLevel).HasMaxLength(10);
+        receiptItem.Property(x => x.Toppings).HasMaxLength(1024);
+        receiptItem.Property(x => x.UnitPrice).HasColumnType("DECIMAL(18,2)");
+        receiptItem.Property(x => x.LineTotal).HasColumnType("DECIMAL(18,2)");
+
+        // Configure relationships
+        receipt.HasMany(r => r.Items)
+               .WithOne(ri => ri.Receipt)
+               .HasForeignKey(ri => ri.ReceiptId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        base.OnModelCreating(modelBuilder);
+    }
+
+    public static string GetDatabasePath() => DbPath;
+    public static string GetDatabaseFolder() => DbFolder;
+}

@@ -13,6 +13,7 @@ public partial class SettingsWindow : Window
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
+        DialogResult = false;
         Close();
     }
 }

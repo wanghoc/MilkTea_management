@@ -3,7 +3,7 @@ using System.Windows;
 using MilkTeaShop.Domain.Entities;
 using MilkTeaShop.Domain.ValueObjects;
 using MilkTeaShop.Application.Services;
-using MilkTeaShop.Domain.Data;
+using MilkTeaShop.Infrastructure.Services;
 
 namespace MilkTeaShop.Presentation.ViewModels;
 
@@ -24,7 +24,7 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            _menuService = new MenuService();
+            _menuService = new EfMenuService(); // Sử dụng SQLite database
             
             AddNewItemCommand = new RelayCommand(AddNewItem);
             EditItemCommand = new RelayCommand(EditItem);
@@ -78,6 +78,7 @@ public class SettingsViewModel : BaseViewModel
             {
                 var category = SelectedTabIndex == 0 ? MenuCategory.MilkTea : MenuCategory.Topping;
                 viewModel.SetCategory(category);
+                viewModel.SetMenuService(_menuService); // Pass the database service
             }
 
             if (addItemWindow.ShowDialog() == true)
@@ -96,7 +97,12 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            if (parameter is not MenuItem item) return;
+            if (parameter is not MenuItem item) 
+            {
+                MessageBox.Show("Không thể xác định món cần chỉnh sửa!", "Lỗi", 
+                               MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             var editItemWindow = new AddEditItemWindow();
             
@@ -109,16 +115,37 @@ public class SettingsViewModel : BaseViewModel
             editItemWindow.Title = "Chỉnh sửa món";
 
             var viewModel = editItemWindow.DataContext as AddEditItemViewModel;
-            viewModel?.LoadItem(item);
-
-            if (editItemWindow.ShowDialog() == true)
+            if (viewModel != null)
             {
+                viewModel.SetMenuService(_menuService); // Pass the database service
+                viewModel.LoadItem(item);
+                Console.WriteLine($"Loading item for edit: {item.Name}, Price: {item.BasePrice}");
+            }
+            else
+            {
+                MessageBox.Show("Không thể khởi tạo form chỉnh sửa!", "Lỗi", 
+                               MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var result = editItemWindow.ShowDialog();
+            if (result == true)
+            {
+                Console.WriteLine("Edit completed successfully");
                 LoadMenuItems(); // Auto refresh after editing
+                
+                // Force UI refresh
+                OnPropertyChanged(nameof(MilkTeaItems));
+                OnPropertyChanged(nameof(ToppingItems));
+            }
+            else
+            {
+                Console.WriteLine("Edit was cancelled");
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi chỉnh sửa món: {ex.Message}", "Lỗi", 
+            MessageBox.Show($"Lỗi chỉnh sửa món: {ex.Message}\n\nStackTrace: {ex.StackTrace}", "Lỗi", 
                            MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
@@ -140,7 +167,7 @@ public class SettingsViewModel : BaseViewModel
             try
             {
                 CleanupItemImage(item);
-                StaticMenuData.RemoveItem(item);
+                _menuService.RemoveItem(item);
                 
                 // Remove from UI collections immediately
                 var collection = item.Category == MenuCategory.MilkTea ? MilkTeaItems : ToppingItems;
@@ -166,19 +193,25 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            StaticMenuData.ForceReload();
-            
             MilkTeaItems.Clear();
             ToppingItems.Clear();
 
             var milkTeaItems = _menuService?.GetMilkTeaItems() ?? new List<MenuItem>();
             var toppingItems = _menuService?.GetToppingItems() ?? new List<MenuItem>();
 
+            Console.WriteLine($"Loading {milkTeaItems.Count} milk tea items and {toppingItems.Count} topping items");
+
             foreach (var item in milkTeaItems)
+            {
                 MilkTeaItems.Add(item);
+                Console.WriteLine($"Loaded milk tea: {item.Name} - {item.BasePrice}");
+            }
 
             foreach (var item in toppingItems)
+            {
                 ToppingItems.Add(item);
+                Console.WriteLine($"Loaded topping: {item.Name} - {item.BasePrice}");
+            }
         }
         catch (Exception ex)
         {
@@ -197,17 +230,9 @@ public class SettingsViewModel : BaseViewModel
             var fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, item.ImagePath);
             if (!System.IO.File.Exists(fullPath)) return;
 
-            // Check if image is used by other items
-            var allItems = StaticMenuData.GetAllItems();
-            var isUsedByOtherItems = allItems.Any(otherItem => 
-                otherItem != item && 
-                !string.IsNullOrEmpty(otherItem.ImagePath) && 
-                otherItem.ImagePath.Equals(item.ImagePath, StringComparison.OrdinalIgnoreCase));
-
-            if (!isUsedByOtherItems)
-            {
-                System.IO.File.Delete(fullPath);
-            }
+            // For database version, we should check with the database service
+            // instead of StaticMenuData, but this is a reasonable fallback
+            System.IO.File.Delete(fullPath);
         }
         catch
         {

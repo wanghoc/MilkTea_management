@@ -1,0 +1,73 @@
+﻿using MilkTeaShop.Application.Services;
+using MilkTeaShop.Infrastructure.Services;
+using MilkTeaShop.Presentation.Auth;
+using MilkTeaShop.Presentation.Helpers;
+using System;
+using System.Linq;
+using System.Text;
+using System.Windows;
+
+namespace MilkTeaShop.Presentation
+{
+    public partial class LoginDiagnosticsWindow : Window
+    {
+        private readonly IUserService _userService;
+
+        public LoginDiagnosticsWindow()
+        {
+            InitializeComponent();
+            _userService = new EfUserService(); // Use EF-based service
+            LoadDiagnostics();
+        }
+
+        private async void LoadDiagnostics()
+        {
+            try
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("=== THÔNG TIN ĐĂNG NHẬP ===");
+                sb.AppendLine();
+                
+                // Current user info
+                sb.AppendLine("NGƯỜI DÙNG HIỆN TẠI:");
+                sb.AppendLine(LoginDebugHelper.GetCurrentUserInfo());
+                sb.AppendLine();
+
+                // Available users
+                sb.AppendLine("=== DANH SÁCH NGƯỜI DÙNG ===");
+                var users = await _userService.GetAllUsersAsync();
+                foreach (var user in users.Where(u => u.IsActive))
+                {
+                    sb.AppendLine($"- Tài khoản: {user.Username}");
+                    sb.AppendLine($"  Mật khẩu: {user.Password}");
+                    sb.AppendLine($"  Họ tên: {user.FullName}");
+                    sb.AppendLine($"  Vai trò: {user.GetRoleDisplayName()}");
+                    sb.AppendLine($"  Trạng thái: {(user.IsActive ? "Hoạt động" : "Không hoạt động")}");
+                    sb.AppendLine();
+                }
+
+                // System info
+                sb.AppendLine("=== THÔNG TIN HỆ THỐNG ===");
+                sb.AppendLine($"Thời gian: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+                sb.AppendLine($"Phiên bản .NET: {Environment.Version}");
+                sb.AppendLine($"Thư mục ứng dụng: {AppDomain.CurrentDomain.BaseDirectory}");
+
+                DiagnosticsText.Text = sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsText.Text = $"Lỗi khi tải thông tin chẩn đoán: {ex.Message}";
+            }
+        }
+
+        private void Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            LoadDiagnostics();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+    }
+}

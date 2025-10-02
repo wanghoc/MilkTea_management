@@ -14,7 +14,7 @@ namespace MilkTeaShop.Presentation.ViewModels;
 public class AddEditItemViewModel : BaseViewModel
 {
     private readonly Window _window;
-    private readonly IMenuService _menuService;
+    private IMenuService? _menuService;
     private MenuItem? _editingItem;
     private bool _isEditMode;
 
@@ -39,7 +39,6 @@ public class AddEditItemViewModel : BaseViewModel
         try
         {
             _window = window;
-            _menuService = new MenuService();
             _selectedCategory = Categories[0]; // Default to MilkTea
             
             SelectImageCommand = new RelayCommand(SelectImage);
@@ -108,6 +107,11 @@ public class AddEditItemViewModel : BaseViewModel
             _selectedCategory = value ?? Categories[0];
             OnPropertyChanged();
         }
+    }
+
+    public void SetMenuService(IMenuService menuService)
+    {
+        _menuService = menuService;
     }
 
     public void LoadItem(MenuItem item)
@@ -226,6 +230,28 @@ public class AddEditItemViewModel : BaseViewModel
                 _editingItem.ImagePath = ImagePath;
                 _editingItem.Category = SelectedCategory.Category;
                 
+                // Use the appropriate service (database or static data)
+                if (_menuService != null)
+                {
+                    _menuService.UpdateItem(_editingItem);
+                }
+                else
+                {
+                    // Fallback to StaticMenuData
+                    var updatedItem = new MenuItem
+                    {
+                        Id = _editingItem.Id,
+                        Name = Name.Trim(),
+                        BasePrice = BasePrice,
+                        Description = Description.Trim(),
+                        ImagePath = ImagePath,
+                        Category = SelectedCategory.Category
+                    };
+                    
+                    StaticMenuData.UpdateItem(_editingItem, updatedItem);
+                    StaticMenuData.ForceReload();
+                }
+                
                 // Clean up old image if it's different and not used by other items
                 if (!string.IsNullOrEmpty(oldImagePath) && oldImagePath != ImagePath)
                 {
@@ -250,7 +276,14 @@ public class AddEditItemViewModel : BaseViewModel
                     Category = SelectedCategory.Category
                 };
 
-                StaticMenuData.AddNewItem(newItem);
+                if (_menuService != null)
+                {
+                    _menuService.AddNewItem(newItem);
+                }
+                else
+                {
+                    StaticMenuData.AddNewItem(newItem);
+                }
                 
                 MessageBox.Show($"Đã thêm '{Name}' thành công!", "Thông báo",
                                MessageBoxButton.OK, MessageBoxImage.Information);
@@ -368,7 +401,16 @@ public class AddEditItemViewModel : BaseViewModel
                 return;
 
             // Check if image is used by other items
-            var allItems = StaticMenuData.GetAllItems();
+            List<MenuItem> allItems;
+            if (_menuService != null)
+            {
+                allItems = _menuService.GetAllItems();
+            }
+            else
+            {
+                allItems = StaticMenuData.GetAllItems();
+            }
+            
             var isUsedByOtherItems = allItems.Any(item => 
                 item != _editingItem && 
                 !string.IsNullOrEmpty(item.ImagePath) && 
