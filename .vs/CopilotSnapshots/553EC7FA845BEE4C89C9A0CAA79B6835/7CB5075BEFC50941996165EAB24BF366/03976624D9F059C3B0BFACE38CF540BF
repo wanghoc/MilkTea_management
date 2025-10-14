@@ -1,0 +1,45 @@
+﻿using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+
+namespace MilkTeaShop.Domain.Data;
+
+public static class StaticMenuData
+{
+    public static List<MenuItem> MilkTeaItems { get; } = new()
+    {
+        new MenuItem { Name = "Trà sữa nguyên chất", BasePrice = 35000, Category = MenuCategory.MilkTea, Description = "Trà sữa truyền thống" },
+        new MenuItem { Name = "Trà sữa chocolate", BasePrice = 40000, Category = MenuCategory.MilkTea, Description = "Trà sữa vị chocolate thơm ngon" },
+        new MenuItem { Name = "Trà sữa dâu", BasePrice = 42000, Category = MenuCategory.MilkTea, Description = "Trà sữa vị dâu tươi mát" },
+        new MenuItem { Name = "Trà sữa khoai môn", BasePrice = 45000, Category = MenuCategory.MilkTea, Description = "Trà sữa khoai môn béo ngậy" },
+        new MenuItem { Name = "Trà sữa matcha", BasePrice = 48000, Category = MenuCategory.MilkTea, Description = "Trà sữa matcha Nhật Bản" },
+        new MenuItem { Name = "Trà sữa đường đen", BasePrice = 50000, Category = MenuCategory.MilkTea, Description = "Trà sữa đường đen Taiwan" },
+        new MenuItem { Name = "Trà sữa kem cheese", BasePrice = 55000, Category = MenuCategory.MilkTea, Description = "Trà sữa với lớp kem cheese mặn ngọt" },
+        new MenuItem { Name = "Trà sữa socola", BasePrice = 45000, Category = MenuCategory.MilkTea, Description = "Trà sữa socola đậm đà" },
+        new MenuItem { Name = "Trà sữa hokkaido", BasePrice = 52000, Category = MenuCategory.MilkTea, Description = "Trà sữa Hokkaido cao cấp" },
+        new MenuItem { Name = "Trà sữa okinawa", BasePrice = 48000, Category = MenuCategory.MilkTea, Description = "Trà sữa Okinawa thơm lừng" }
+    };
+
+    public static List<MenuItem> ToppingItems { get; } = new()
+    {
+        new MenuItem { Name = "Trân châu đen", BasePrice = 8000, Category = MenuCategory.Topping, Description = "Trân châu đen dai ngon" },
+        new MenuItem { Name = "Trân châu trắng", BasePrice = 8000, Category = MenuCategory.Topping, Description = "Trân châu trắng mềm mịn" },
+        new MenuItem { Name = "Trân châu hoàng kim", BasePrice = 10000, Category = MenuCategory.Topping, Description = "Trân châu hoàng kim đặc biệt" },
+        new MenuItem { Name = "Pudding", BasePrice = 12000, Category = MenuCategory.Topping, Description = "Pudding mềm mịn" },
+        new MenuItem { Name = "Thạch cà phê", BasePrice = 10000, Category = MenuCategory.Topping, Description = "Thạch cà phê thơm đậm đà" },
+        new MenuItem { Name = "Thạch dừa", BasePrice = 10000, Category = MenuCategory.Topping, Description = "Thạch dừa tươi mát" },
+        new MenuItem { Name = "Kem cheese", BasePrice = 15000, Category = MenuCategory.Topping, Description = "Lớp kem cheese mặn ngọt" },
+        new MenuItem { Name = "Đậu đỏ", BasePrice = 8000, Category = MenuCategory.Topping, Description = "Đậu đỏ bùi bùi" },
+        new MenuItem { Name = "Hạt chia", BasePrice = 12000, Category = MenuCategory.Topping, Description = "Hạt chia giàu dinh dưỡng" },
+        new MenuItem { Name = "Jelly", BasePrice = 9000, Category = MenuCategory.Topping, Description = "Thạch jelly nhiều màu sắc" }
+    };
+
+    public static List<MenuItem> GetAllItems() => MilkTeaItems.Concat(ToppingItems).ToList();
+    
+    public static void AddNewItem(MenuItem item)
+    {
+        if (item.Category == MenuCategory.MilkTea)
+            MilkTeaItems.Add(item);
+        else
+            ToppingItems.Add(item);
+    }
+}

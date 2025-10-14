@@ -1,0 +1,74 @@
+﻿using MilkTeaShop.Domain.Interfaces;
+
+namespace MilkTeaShop.Domain.Patterns.Decorator;
+
+// Base decorators cho từng loại trà sữa
+public class OriginalMilkTeaDecorator : DrinkDecorator
+{
+    public OriginalMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 35000m;
+    public override string GetDescription() => "Trà sữa nguyên chất";
+}
+
+public class ChocolateMilkTeaDecorator : DrinkDecorator
+{
+    public ChocolateMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 40000m;
+    public override string GetDescription() => "Trà sữa chocolate";
+}
+
+public class StrawberryMilkTeaDecorator : DrinkDecorator
+{
+    public StrawberryMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 42000m;
+    public override string GetDescription() => "Trà sữa dâu";
+}
+
+public class TaroMilkTeaDecorator : DrinkDecorator
+{
+    public TaroMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 45000m;
+    public override string GetDescription() => "Trà sữa khoai môn";
+}
+
+public class MatchaMilkTeaDecorator : DrinkDecorator
+{
+    public MatchaMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 48000m;
+    public override string GetDescription() => "Trà sữa matcha";
+}
+
+public class BrownSugarMilkTeaDecorator : DrinkDecorator
+{
+    public BrownSugarMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 50000m;
+    public override string GetDescription() => "Trà sữa đường đen";
+}
+
+public class CreamCheeseMilkTeaDecorator : DrinkDecorator
+{
+    public CreamCheeseMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 55000m;
+    public override string GetDescription() => "Trà sữa kem cheese";
+}
+
+public class CocoaMilkTeaDecorator : DrinkDecorator
+{
+    public CocoaMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 45000m;
+    public override string GetDescription() => "Trà sữa socola";
+}
+
+public class HokkaidoMilkTeaDecorator : DrinkDecorator
+{
+    public HokkaidoMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 52000m;
+    public override string GetDescription() => "Trà sữa hokkaido";
+}
+
+public class OkinawaMilkTeaDecorator : DrinkDecorator
+{
+    public OkinawaMilkTeaDecorator(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => Inner.GetPrice() + 48000m;
+    public override string GetDescription() => "Trà sữa okinawa";
+}

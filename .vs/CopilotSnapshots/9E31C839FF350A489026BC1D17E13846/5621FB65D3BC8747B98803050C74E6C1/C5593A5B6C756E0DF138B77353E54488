@@ -1,0 +1,143 @@
+﻿using System.Windows;
+using MilkTeaShop.Domain.Entities;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class App : System.Windows.Application
+{
+    private MainWindow? mainWindow = null;
+    
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        
+        // Setup global exception handling
+        this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        
+        try
+        {
+            ShowLoginAndMainWindow();
+        }
+        catch (Exception ex)
+        {
+            HandleCriticalStartupError(ex);
+        }
+    }
+    
+    private void Application_Startup(object sender, StartupEventArgs e)
+    {
+        // This method is called from XAML, but we'll use OnStartup instead
+    }
+    
+    private void ShowLoginAndMainWindow()
+    {
+        Console.WriteLine("Application starting...");
+            
+        // Show login window first
+        var loginWindow = new LoginWindow();
+        
+        try
+        {
+            // IMPORTANT FIX: Use ShowDialog() and check result
+            Console.WriteLine("Showing login window...");
+            bool? loginResult = loginWindow.ShowDialog();
+            
+            Console.WriteLine($"Login dialog closed. Result: {loginResult}, User logged in: {CurrentUser.Instance.IsLoggedIn}");
+            
+            // Check if login was successful
+            if (loginResult == true && CurrentUser.Instance.IsLoggedIn)
+            {
+                Console.WriteLine($"Login successful for user: {CurrentUser.Instance.LoggedInUser?.Username}");
+                ShowMainApplicationWindow();
+            }
+            else
+            {
+                Console.WriteLine("Login was cancelled or failed. Shutting down application.");
+                this.Shutdown();
+            }
+        }
+        catch (Exception ex)
+        {
+            HandleCriticalStartupError(ex);
+        }
+    }
+    
+    private void ShowMainApplicationWindow()
+    {
+        try
+        {
+            // Create and show the main window
+            Console.WriteLine("Creating MainWindow...");
+            mainWindow = new MainWindow();
+            
+            // Set as application's main window
+            this.MainWindow = mainWindow;
+            
+            Console.WriteLine("Showing MainWindow...");
+            mainWindow.Show();
+            
+            // Ensure MainWindow is activated and brought to front
+            mainWindow.Activate();
+            mainWindow.Focus();
+            
+            Console.WriteLine("MainWindow displayed successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error showing MainWindow: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            MessageBox.Show($"Lỗi hiển thị cửa sổ chính: {ex.Message}\n\nVui lòng khởi động lại ứng dụng.",
+                          "Lỗi hiển thị", MessageBoxButton.OK, MessageBoxImage.Error);
+            this.Shutdown();
+        }
+    }
+    
+    private void HandleCriticalStartupError(Exception ex)
+    {
+        Console.WriteLine($"CRITICAL STARTUP ERROR: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        
+        try
+        {
+            MessageBox.Show(
+                $"Lỗi nghiêm trọng khi khởi động ứng dụng:\n\n{ex.Message}\n\nStack trace:\n{ex.StackTrace}",
+                "Lỗi khởi động nghiêm trọng",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        catch
+        {
+            // Last resort if even showing message box fails
+        }
+        
+        this.Shutdown(1);
+    }
+    
+    private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        Console.WriteLine($"Unhandled dispatcher exception: {e.Exception.Message}");
+        Console.WriteLine($"Stack trace: {e.Exception.StackTrace}");
+        
+        MessageBox.Show(
+            $"Lỗi không xử lý được:\n\n{e.Exception.Message}\n\nStack trace:\n{e.Exception.StackTrace}",
+            "Lỗi ứng dụng",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+            
+        e.Handled = true;
+    }
+    
+    private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        var ex = e.ExceptionObject as Exception;
+        Console.WriteLine($"Unhandled domain exception: {ex?.Message ?? "Unknown error"}");
+        Console.WriteLine($"Stack trace: {ex?.StackTrace}");
+        
+        MessageBox.Show(
+            $"Lỗi nghiêm trọng không xử lý được:\n\n{ex?.Message ?? "Unknown error"}\n\nỨng dụng sẽ đóng.",
+            "Lỗi nghiêm trọng",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+    }
+}

@@ -1,0 +1,46 @@
+﻿using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Domain.Interfaces;
+
+namespace MilkTeaShop.Domain.Patterns.Builder;
+
+public class OrderItemBuilder : IOrderItemBuilder
+{
+    private IPriceable? _drink;
+    private SizeOption _size = SizeOption.Medium;
+    private int _qty = 1;
+    private readonly List<Func<IPriceable, IPriceable>> _toppings = new();
+
+    public IOrderItemBuilder SetBaseDrink(IPriceable baseDrink)
+    {
+        _drink = baseDrink;
+        return this;
+    }
+
+    public IOrderItemBuilder SetSize(SizeOption size)
+    {
+        _size = size;
+        return this;
+    }
+
+    public IOrderItemBuilder AddTopping(Func<IPriceable, IPriceable> toppingWrapper)
+    {
+        _toppings.Add(toppingWrapper);
+        return this;
+    }
+
+    public IOrderItemBuilder SetQuantity(int quantity)
+    {
+        _qty = Math.Max(1, quantity);
+        return this;
+    }
+
+    public OrderItem Build()
+    {
+        if (_drink is null) throw new InvalidOperationException("Base drink is required");
+        IPriceable composed = _drink;
+        foreach (var wrap in _toppings) composed = wrap(composed);
+        var item = new OrderItem(composed) { Quantity = _qty, Size = _size };
+        return item;
+    }
+}

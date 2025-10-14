@@ -1,0 +1,167 @@
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Application.Services;
+using MilkTeaShop.Domain.Data;
+
+namespace MilkTeaShop.Presentation.ViewModels;
+
+public class SettingsViewModel : BaseViewModel
+{
+    private readonly IMenuService _menuService;
+    private int _selectedTabIndex = 0;
+    private MenuItem? _selectedItem;
+
+    public ObservableCollection<MenuItem> MilkTeaItems { get; } = new();
+    public ObservableCollection<MenuItem> ToppingItems { get; } = new();
+
+    public RelayCommand AddNewItemCommand { get; }
+    public RelayCommand EditItemCommand { get; }
+    public RelayCommand DeleteItemCommand { get; }
+
+    public SettingsViewModel()
+    {
+        _menuService = new MenuService();
+        
+        AddNewItemCommand = new RelayCommand(AddNewItem);
+        EditItemCommand = new RelayCommand(EditItem);
+        DeleteItemCommand = new RelayCommand(DeleteItem);
+        
+        LoadMenuItems();
+    }
+
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set
+        {
+            _selectedTabIndex = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public MenuItem? SelectedItem
+    {
+        get => _selectedItem;
+        set
+        {
+            _selectedItem = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private void AddNewItem(object? parameter)
+    {
+        var addItemWindow = new AddEditItemWindow
+        {
+            Owner = System.Windows.Application.Current.MainWindow,
+            Title = "Thêm món mới"
+        };
+
+        // Set category based on current tab
+        var viewModel = addItemWindow.DataContext as AddEditItemViewModel;
+        if (viewModel != null)
+        {
+            var category = SelectedTabIndex == 0 ? MenuCategory.MilkTea : MenuCategory.Topping;
+            viewModel.SetCategory(category);
+        }
+
+        if (addItemWindow.ShowDialog() == true)
+        {
+            LoadMenuItems(); // Auto refresh after adding
+        }
+    }
+
+    private void EditItem(object? parameter)
+    {
+        if (parameter is not MenuItem item) return;
+
+        var editItemWindow = new AddEditItemWindow
+        {
+            Owner = System.Windows.Application.Current.MainWindow,
+            Title = "Chỉnh sửa món"
+        };
+
+        var viewModel = editItemWindow.DataContext as AddEditItemViewModel;
+        viewModel?.LoadItem(item);
+
+        if (editItemWindow.ShowDialog() == true)
+        {
+            LoadMenuItems(); // Auto refresh after editing
+        }
+    }
+
+    private void DeleteItem(object? parameter)
+    {
+        if (parameter is not MenuItem item) return;
+
+        var result = MessageBox.Show(
+            $"Bạn có chắc chắn muốn xóa '{item.Name}'?\nThao tác này không thể hoàn tác.",
+            "Xác nhận xóa",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes) return;
+
+        try
+        {
+            CleanupItemImage(item);
+            StaticMenuData.RemoveItem(item);
+            
+            // Remove from UI collections immediately
+            var collection = item.Category == MenuCategory.MilkTea ? MilkTeaItems : ToppingItems;
+            collection.Remove(item);
+
+            MessageBox.Show($"Đã xóa '{item.Name}' thành công!", "Thông báo",
+                           MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi xóa món: {ex.Message}", "Lỗi",
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void LoadMenuItems()
+    {
+        StaticMenuData.ForceReload();
+        
+        MilkTeaItems.Clear();
+        ToppingItems.Clear();
+
+        foreach (var item in _menuService.GetMilkTeaItems())
+            MilkTeaItems.Add(item);
+
+        foreach (var item in _menuService.GetToppingItems())
+            ToppingItems.Add(item);
+    }
+
+    private static void CleanupItemImage(MenuItem item)
+    {
+        if (string.IsNullOrEmpty(item.ImagePath) || !item.ImagePath.StartsWith("Images"))
+            return;
+
+        try
+        {
+            var fullPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, item.ImagePath);
+            if (!System.IO.File.Exists(fullPath)) return;
+
+            // Check if image is used by other items
+            var allItems = StaticMenuData.GetAllItems();
+            var isUsedByOtherItems = allItems.Any(otherItem => 
+                otherItem != item && 
+                !string.IsNullOrEmpty(otherItem.ImagePath) && 
+                otherItem.ImagePath.Equals(item.ImagePath, StringComparison.OrdinalIgnoreCase));
+
+            if (!isUsedByOtherItems)
+            {
+                System.IO.File.Delete(fullPath);
+            }
+        }
+        catch
+        {
+            // Ignore cleanup errors
+        }
+    }
+}

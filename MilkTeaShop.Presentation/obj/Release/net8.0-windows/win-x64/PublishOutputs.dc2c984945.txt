@@ -1,0 +1,11 @@
+D:\WangHoc MilkTeaShop\MilkTeaShop.Presentation.pdb
+D:\WangHoc MilkTeaShop\D3DCompiler_47_cor3.dll
+D:\WangHoc MilkTeaShop\PenImc_cor3.dll
+D:\WangHoc MilkTeaShop\PresentationNative_cor3.dll
+D:\WangHoc MilkTeaShop\vcruntime140_cor3.dll
+D:\WangHoc MilkTeaShop\wpfgfx_cor3.dll
+D:\WangHoc MilkTeaShop\e_sqlite3.dll
+D:\WangHoc MilkTeaShop\MilkTeaShop.Domain.pdb
+D:\WangHoc MilkTeaShop\MilkTeaShop.Application.pdb
+D:\WangHoc MilkTeaShop\MilkTeaShop.Infrastructure.pdb
+D:\WangHoc MilkTeaShop\MilkTeaShop.Presentation.exe

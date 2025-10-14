@@ -1,0 +1,14 @@
+﻿using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Domain.Interfaces;
+
+namespace MilkTeaShop.Domain.Patterns.Builder;
+
+public interface IOrderItemBuilder
+{
+    IOrderItemBuilder SetBaseDrink(IPriceable baseDrink);
+    IOrderItemBuilder SetSize(SizeOption size);
+    IOrderItemBuilder AddTopping(Func<IPriceable, IPriceable> toppingWrapper);
+    IOrderItemBuilder SetQuantity(int quantity);
+    OrderItem Build();
+}

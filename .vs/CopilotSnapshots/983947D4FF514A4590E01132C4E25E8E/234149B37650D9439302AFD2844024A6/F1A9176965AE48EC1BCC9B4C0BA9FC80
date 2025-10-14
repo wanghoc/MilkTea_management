@@ -1,0 +1,77 @@
+﻿using MilkTeaShop.Application.Services;
+using MilkTeaShop.Infrastructure.Services;
+using MilkTeaShop.Presentation.Auth;
+using System;
+using System.Windows;
+
+namespace MilkTeaShop.Presentation
+{
+    public partial class ChangePasswordWindow : Window
+    {
+        private readonly IUserService _userService;
+
+        public ChangePasswordWindow()
+        {
+            InitializeComponent();
+            _userService = new InMemoryUserService();
+        }
+
+        private async void ChangePassword_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!CurrentUser.Instance.IsLoggedIn)
+                {
+                    MessageText.Text = "Bạn cần đăng nhập để đổi mật khẩu.";
+                    return;
+                }
+
+                var currentPassword = CurrentPasswordBox.Password;
+                var newPassword = NewPasswordBox.Password;
+
+                if (string.IsNullOrWhiteSpace(currentPassword))
+                {
+                    MessageText.Text = "Vui lòng nhập mật khẩu hiện tại.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(newPassword))
+                {
+                    MessageText.Text = "Vui lòng nhập mật khẩu mới.";
+                    return;
+                }
+
+                if (newPassword.Length < 3)
+                {
+                    MessageText.Text = "Mật khẩu mới phải có ít nhất 3 ký tự.";
+                    return;
+                }
+
+                var userId = CurrentUser.Instance.LoggedInUser!.Id;
+                bool success = await _userService.ChangePasswordAsync(userId, currentPassword, newPassword);
+
+                if (success)
+                {
+                    MessageBox.Show("Đổi mật khẩu thành công!", "Thành công", 
+                                  MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    MessageText.Text = "Mật khẩu hiện tại không đúng.";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageText.Text = $"Lỗi: {ex.Message}";
+            }
+        }
+
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
+    }
+}

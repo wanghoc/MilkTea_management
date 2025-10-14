@@ -1,0 +1,10 @@
+﻿using MilkTeaShop.Domain.Interfaces;
+
+namespace MilkTeaShop.Domain.Patterns.Decorator;
+
+public class CheeseFoamTopping : DrinkDecorator
+{
+    public CheeseFoamTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 8000m;
+    public override string GetDescription() => base.GetDescription() + " + Cheese Foam";
+}

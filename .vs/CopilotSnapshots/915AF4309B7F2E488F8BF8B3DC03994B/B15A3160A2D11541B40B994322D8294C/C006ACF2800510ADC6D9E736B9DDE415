@@ -1,0 +1,46 @@
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace MilkTeaShop.Domain.Entities;
+
+public class Receipt
+{
+    public Receipt()
+    {
+        Items = new List<ReceiptItem>();
+    }
+
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string OrderId { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public decimal Subtotal { get; set; }
+    public decimal Discount { get; set; }
+    public decimal Total { get; set; }
+    public string CustomerNote { get; set; } = string.Empty;
+    public string ReceiptContent { get; set; } = string.Empty; // Full receipt text
+    public string PaymentMethod { get; set; } = "Cash"; // Cash, Card, etc.
+    
+    // Navigation properties
+    public virtual List<ReceiptItem> Items { get; set; }
+}
+
+public class ReceiptItem
+{
+    public ReceiptItem()
+    {
+    }
+
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string ReceiptId { get; set; } = string.Empty;
+    public string DrinkName { get; set; } = string.Empty;
+    public string Size { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public string SugarLevel { get; set; } = string.Empty;
+    public string IceLevel { get; set; } = string.Empty;
+    public string Toppings { get; set; } = string.Empty; // JSON string của toppings
+    public decimal UnitPrice { get; set; }
+    public decimal LineTotal { get; set; }
+    
+    // Navigation property
+    [ForeignKey("ReceiptId")]
+    public virtual Receipt? Receipt { get; set; }
+}

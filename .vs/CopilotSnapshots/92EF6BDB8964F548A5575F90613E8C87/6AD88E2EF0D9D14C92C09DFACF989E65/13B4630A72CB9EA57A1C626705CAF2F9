@@ -1,0 +1,59 @@
+﻿<Window x:Class="MilkTeaShop.Presentation.ReceiptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WangHoc Milk Tea - Hóa đơn" Height="600" Width="500"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Background="#F0F8FF">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header với gradient -->
+        <Border Grid.Row="0" CornerRadius="0,0,20,20" Margin="0,0,0,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#32CD32" Offset="0"/>
+                    <GradientStop Color="#228B22" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Margin="20,15">
+                <TextBlock Text="🧾 HÓA ĐƠN THANH TOÁN" Foreground="White" FontSize="20" 
+                         FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock Text="WangHoc Milk Tea" Foreground="#E6FFE6" FontSize="16" 
+                         HorizontalAlignment="Center" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Receipt Content -->
+        <Border Grid.Row="1" Background="White" CornerRadius="15" Margin="20,0,20,20" 
+                Padding="20" Effect="{StaticResource {x:Static SystemParameters.DropShadowKey}}">
+            <ScrollViewer>
+                <TextBox Text="{Binding ReceiptText, Mode=OneWay}" 
+                         IsReadOnly="True" 
+                         Background="Transparent"
+                         BorderThickness="0"
+                         FontFamily="Consolas"
+                         FontSize="14"
+                         Foreground="#333"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"/>
+            </ScrollViewer>
+        </Border>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" 
+                    Margin="20,0,20,20" Spacing="15">
+            <Button Content="🖨️ In hóa đơn" Click="Print_Click" 
+                    Background="#4169E1" Foreground="White" 
+                    Padding="20,12" FontSize="14" FontWeight="Bold" CornerRadius="8"
+                    Effect="{StaticResource {x:Static SystemParameters.DropShadowKey}}"/>
+            <Button Content="❌ Đóng" Click="Close_Click" 
+                    Background="#FF6347" Foreground="White" 
+                    Padding="20,12" FontSize="14" FontWeight="Bold" CornerRadius="8"
+                    Effect="{StaticResource {x:Static SystemParameters.DropShadowKey}}"/>
+        </StackPanel>
+    </Grid>
+</Window>

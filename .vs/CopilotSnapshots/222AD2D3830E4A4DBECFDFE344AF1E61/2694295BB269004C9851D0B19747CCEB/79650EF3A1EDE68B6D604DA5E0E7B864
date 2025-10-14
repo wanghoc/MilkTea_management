@@ -1,0 +1,58 @@
+﻿using MilkTeaShop.Domain.Interfaces;
+
+namespace MilkTeaShop.Domain.Patterns.Decorator;
+
+// Generic decorator for new milk tea items that don't have specific decorators
+public class GenericMilkTeaDecorator : IPriceable
+{
+    private readonly IPriceable _drink;
+    private readonly string _name;
+    private readonly decimal _price;
+    private readonly string _description;
+
+    public GenericMilkTeaDecorator(IPriceable drink, string name, decimal price, string description)
+    {
+        _drink = drink;
+        _name = name;
+        _price = price;
+        _description = description;
+    }
+
+    public decimal GetPrice()
+    {
+        return _drink.GetPrice() + _price;
+    }
+
+    public string GetDescription()
+    {
+        return _name;
+    }
+}
+
+// Generic decorator for new topping items that don't have specific decorators
+public class GenericToppingDecorator : IPriceable
+{
+    private readonly IPriceable _drink;
+    private readonly string _name;
+    private readonly decimal _price;
+    private readonly string _description;
+
+    public GenericToppingDecorator(IPriceable drink, string name, decimal price, string description)
+    {
+        _drink = drink;
+        _name = name;
+        _price = price;
+        _description = description;
+    }
+
+    public decimal GetPrice()
+    {
+        return _drink.GetPrice() + _price;
+    }
+
+    public string GetDescription()
+    {
+        var baseDescription = _drink.GetDescription();
+        return string.IsNullOrEmpty(baseDescription) ? _name : $"{baseDescription} + {_name}";
+    }
+}

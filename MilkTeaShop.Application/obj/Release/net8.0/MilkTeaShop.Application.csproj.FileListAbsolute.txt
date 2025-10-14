@@ -1,0 +1,31 @@
+D:\MilkTeaShop\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Application.deps.json
+D:\MilkTeaShop\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Application.dll
+D:\MilkTeaShop\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Application.pdb
+D:\MilkTeaShop\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Domain.dll
+D:\MilkTeaShop\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Domain.pdb
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.csproj.AssemblyReference.cache
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.AssemblyInfoInputs.cache
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.AssemblyInfo.cs
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.csproj.CoreCompileInputs.cache
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.sourcelink.json
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaS.D219CAFE.Up2Date
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.dll
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\refint\MilkTeaShop.Application.dll
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.pdb
+D:\MilkTeaShop\MilkTeaShop.Application\obj\Release\net8.0\ref\MilkTeaShop.Application.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Application.deps.json
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Application.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Application.pdb
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\bin\Release\net8.0\MilkTeaShop.Domain.pdb
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.csproj.AssemblyReference.cache
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.AssemblyInfoInputs.cache
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.AssemblyInfo.cs
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.csproj.CoreCompileInputs.cache
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaS.D219CAFE.Up2Date
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\refint\MilkTeaShop.Application.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\MilkTeaShop.Application.pdb
+D:\Design pattern\MilkTea_management\MilkTeaShop.Application\obj\Release\net8.0\ref\MilkTeaShop.Application.dll

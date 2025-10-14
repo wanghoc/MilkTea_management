@@ -1,0 +1,209 @@
+﻿using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using System.IO;
+using System.Text.Json;
+
+namespace MilkTeaShop.Domain.Data;
+
+public static class StaticMenuData
+{
+    private static readonly string DataFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "menu_data.json");
+    private static bool _dataLoaded = false;
+    
+    private static List<MenuItem> _milkTeaItems = new()
+    {
+        // Các loại trà sữa truyền thống
+        new MenuItem { Name = "Trà sữa nguyên chất", BasePrice = 35000, Category = MenuCategory.MilkTea, Description = "Trà sữa truyền thống" },
+        new MenuItem { Name = "Trà sữa chocolate", BasePrice = 40000, Category = MenuCategory.MilkTea, Description = "Trà sữa vị chocolate thơm ngon" },
+        new MenuItem { Name = "Trà sữa dâu", BasePrice = 42000, Category = MenuCategory.MilkTea, Description = "Trà sữa vị dâu tươi mát" },
+        new MenuItem { Name = "Trà sữa khoai môn", BasePrice = 45000, Category = MenuCategory.MilkTea, Description = "Trà sữa khoai môn béo ngậy" },
+        new MenuItem { Name = "Trà sữa matcha", BasePrice = 48000, Category = MenuCategory.MilkTea, Description = "Trà sữa matcha Nhật Bản" },
+        new MenuItem { Name = "Trà sữa đường đen", BasePrice = 50000, Category = MenuCategory.MilkTea, Description = "Trà sữa đường đen Taiwan" },
+        new MenuItem { Name = "Trà sữa kem cheese", BasePrice = 55000, Category = MenuCategory.MilkTea, Description = "Trà sữa với lớp kem cheese mặn ngọt" },
+        new MenuItem { Name = "Trà sữa socola", BasePrice = 45000, Category = MenuCategory.MilkTea, Description = "Trà sữa socola đậm đà" },
+        new MenuItem { Name = "Trà sữa hokkaido", BasePrice = 52000, Category = MenuCategory.MilkTea, Description = "Trà sữa Hokkaido cao cấp" },
+        new MenuItem { Name = "Trà sữa okinawa", BasePrice = 48000, Category = MenuCategory.MilkTea, Description = "Trà sữa Okinawa thơm lừng" },
+        
+        // Các loại trà sữa mới thêm
+        new MenuItem { Name = "Trà sữa trân châu đường đen", BasePrice = 52000, Category = MenuCategory.MilkTea, Description = "Trà sữa đường đen với trân châu đen đặc biệt" },
+        new MenuItem { Name = "Trà sữa oolong", BasePrice = 46000, Category = MenuCategory.MilkTea, Description = "Trà sữa oolong Đài Loan thơm nồng" },
+        new MenuItem { Name = "Trà sữa caramel", BasePrice = 47000, Category = MenuCategory.MilkTea, Description = "Trà sữa caramel ngọt ngào" },
+        new MenuItem { Name = "Trà sữa vani", BasePrice = 43000, Category = MenuCategory.MilkTea, Description = "Trà sữa vani thơm dịu" },
+        new MenuItem { Name = "Trà sữa yakult", BasePrice = 49000, Category = MenuCategory.MilkTea, Description = "Trà sữa yakult chua ngọt sảng khoái" },
+        new MenuItem { Name = "Trà sữa dừa", BasePrice = 46000, Category = MenuCategory.MilkTea, Description = "Trà sữa dừa tươi mát lạnh" },
+        new MenuItem { Name = "Trà sữa việt quất", BasePrice = 50000, Category = MenuCategory.MilkTea, Description = "Trà sữa việt quất thơm ngon bổ dưỡng" },
+        new MenuItem { Name = "Trà sữa xoài", BasePrice = 48000, Category = MenuCategory.MilkTea, Description = "Trà sữa xoài ngọt thanh" },
+        new MenuItem { Name = "Trà sữa kiwi", BasePrice = 47000, Category = MenuCategory.MilkTea, Description = "Trà sữa kiwi chua ngọt đặc biệt" },
+        new MenuItem { Name = "Trà sữa bạc hà", BasePrice = 44000, Category = MenuCategory.MilkTea, Description = "Trà sữa bạc hà mát lạnh sảng khoái" }
+    };
+
+    private static List<MenuItem> _toppingItems = new()
+    {
+        // Các loại topping truyền thống
+        new MenuItem { Name = "Trân châu đen", BasePrice = 8000, Category = MenuCategory.Topping, Description = "Trân châu đen dai ngon" },
+        new MenuItem { Name = "Trân châu trắng", BasePrice = 8000, Category = MenuCategory.Topping, Description = "Trân châu trắng mềm mịn" },
+        new MenuItem { Name = "Trân châu hoàng kim", BasePrice = 10000, Category = MenuCategory.Topping, Description = "Trân châu hoàng kim đặc biệt" },
+        new MenuItem { Name = "Pudding", BasePrice = 12000, Category = MenuCategory.Topping, Description = "Pudding mềm mịn" },
+        new MenuItem { Name = "Thạch cà phê", BasePrice = 10000, Category = MenuCategory.Topping, Description = "Thạch cà phê thơm đậm đà" },
+        new MenuItem { Name = "Thạch dừa", BasePrice = 10000, Category = MenuCategory.Topping, Description = "Thạch dừa tươi mát" },
+        new MenuItem { Name = "Kem cheese", BasePrice = 15000, Category = MenuCategory.Topping, Description = "Lớp kem cheese mặn ngọt" },
+        new MenuItem { Name = "Đậu đỏ", BasePrice = 8000, Category = MenuCategory.Topping, Description = "Đậu đỏ bùi bùi" },
+        new MenuItem { Name = "Hạt chia", BasePrice = 12000, Category = MenuCategory.Topping, Description = "Hạt chia giàu dinh dưỡng" },
+        new MenuItem { Name = "Jelly", BasePrice = 9000, Category = MenuCategory.Topping, Description = "Thạch jelly nhiều màu sắc" },
+        
+        // Các loại topping mới thêm
+        new MenuItem { Name = "Trân châu sương mai", BasePrice = 11000, Category = MenuCategory.Topping, Description = "Trân châu sương mai trong suốt đặc biệt" },
+        new MenuItem { Name = "Thạch trái cây", BasePrice = 10000, Category = MenuCategory.Topping, Description = "Thạch trái cây nhiều màu sắc" },
+        new MenuItem { Name = "Nha đam", BasePrice = 9000, Category = MenuCategory.Topping, Description = "Nha đam tươi mát giải nhiệt" },
+        new MenuItem { Name = "Sương sáo", BasePrice = 9000, Category = MenuCategory.Topping, Description = "Sương sáo mát lạnh thanh nhiệt" },
+        new MenuItem { Name = "Flan", BasePrice = 13000, Category = MenuCategory.Topping, Description = "Flan caramel béo ngậy" },
+        new MenuItem { Name = "Thạch phô mai", BasePrice = 12000, Category = MenuCategory.Topping, Description = "Thạch phô mai mềm mịn" },
+        new MenuItem { Name = "Trái cây tươi", BasePrice = 15000, Category = MenuCategory.Topping, Description = "Trái cây tươi theo mùa" },
+        new MenuItem { Name = "Hạt sen", BasePrice = 10000, Category = MenuCategory.Topping, Description = "Hạt sen bùi bùi thơm ngon" },
+        new MenuItem { Name = "Khoai môn tím", BasePrice = 11000, Category = MenuCategory.Topping, Description = "Khoai môn tím tươi thái viên" },
+        new MenuItem { Name = "Thạch rau câu", BasePrice = 8000, Category = MenuCategory.Topping, Description = "Thạch rau câu mát lạnh" }
+    };
+
+    public static List<MenuItem> MilkTeaItems 
+    { 
+        get 
+        {
+            LoadDataFromFile();
+            return _milkTeaItems;
+        } 
+    }
+
+    public static List<MenuItem> ToppingItems 
+    { 
+        get 
+        {
+            LoadDataFromFile();
+            return _toppingItems;
+        } 
+    }
+
+    public static List<MenuItem> GetAllItems() => MilkTeaItems.Concat(ToppingItems).ToList();
+    
+    public static void AddNewItem(MenuItem item)
+    {
+        LoadDataFromFile(); // Ensure we have latest data
+        
+        if (item.Category == MenuCategory.MilkTea)
+            _milkTeaItems.Add(item);
+        else
+            _toppingItems.Add(item);
+            
+        SaveDataToFile();
+        _dataLoaded = false; // Force reload next time
+    }
+
+    public static bool RemoveItem(MenuItem item)
+    {
+        LoadDataFromFile();
+        
+        bool removed = false;
+        if (item.Category == MenuCategory.MilkTea)
+        {
+            removed = _milkTeaItems.Remove(item);
+        }
+        else
+        {
+            removed = _toppingItems.Remove(item);
+        }
+        
+        if (removed)
+        {
+            SaveDataToFile();
+            _dataLoaded = false; // Force reload next time
+        }
+        
+        return removed;
+    }
+
+    public static void UpdateItem(MenuItem oldItem, MenuItem newItem)
+    {
+        LoadDataFromFile();
+        
+        var list = oldItem.Category == MenuCategory.MilkTea ? _milkTeaItems : _toppingItems;
+        var index = list.IndexOf(oldItem);
+        
+        if (index >= 0)
+        {
+            list[index] = newItem;
+            SaveDataToFile();
+            _dataLoaded = false; // Force reload next time
+        }
+    }
+
+    public static void ForceReload()
+    {
+        _dataLoaded = false;
+        LoadDataFromFile();
+    }
+
+    // Helper methods để lấy tên các loại trà sữa và topping
+    public static List<string> GetMilkTeaNames() => MilkTeaItems.Select(x => x.Name).ToList();
+    public static List<string> GetToppingNames() => ToppingItems.Select(x => x.Name).ToList();
+
+    // Method to calculate price based on size (Medium is base price, Small -15%, Large +15%)
+    public static decimal CalculatePriceBySize(decimal basePrice, SizeOption size)
+    {
+        return size switch
+        {
+            SizeOption.Small => basePrice * 0.85M,  // -15%
+            SizeOption.Medium => basePrice,         // Base price
+            SizeOption.Large => basePrice * 1.15M,  // +15%
+            _ => basePrice
+        };
+    }
+
+    private static void LoadDataFromFile()
+    {
+        if (_dataLoaded) return; // Already loaded
+        
+        try
+        {
+            if (File.Exists(DataFilePath))
+            {
+                var json = File.ReadAllText(DataFilePath);
+                var data = JsonSerializer.Deserialize<MenuData>(json);
+                if (data != null)
+                {
+                    _milkTeaItems = data.MilkTeaItems ?? _milkTeaItems;
+                    _toppingItems = data.ToppingItems ?? _toppingItems;
+                }
+            }
+            _dataLoaded = true;
+        }
+        catch
+        {
+            // If loading fails, use default data
+            _dataLoaded = true;
+        }
+    }
+
+    private static void SaveDataToFile()
+    {
+        try
+        {
+            var data = new MenuData
+            {
+                MilkTeaItems = _milkTeaItems,
+                ToppingItems = _toppingItems
+            };
+            
+            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(DataFilePath, json);
+        }
+        catch
+        {
+            // Ignore save errors for now
+        }
+    }
+
+    private class MenuData
+    {
+        public List<MenuItem> MilkTeaItems { get; set; } = new();
+        public List<MenuItem> ToppingItems { get; set; } = new();
+    }
+}

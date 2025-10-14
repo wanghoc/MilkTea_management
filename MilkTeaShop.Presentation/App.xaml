@@ -1,0 +1,9 @@
+<Application x:Class="MilkTeaShop.Presentation.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:MilkTeaShop.Presentation.Converters">
+    <Application.Resources>
+        <converters:TabVisibilityConverter x:Key="TabVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+    </Application.Resources>
+</Application>

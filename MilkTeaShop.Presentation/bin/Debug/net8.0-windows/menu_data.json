@@ -1,0 +1,177 @@
+{
+  "MilkTeaItems": [
+    {
+      "Id": "a2115620-c5b8-449f-bee0-056dbf16c85d",
+      "Name": "Tr\u00E0 s\u1EEFa truy\u1EC1n th\u1ED1ng",
+      "BasePrice": 25000,
+      "Category": 0,
+      "ImagePath": "Images\\ts_truyen_thong_20250928_145804_20250928_145921.jpg",
+      "Description": "Tr\u00E0 s\u1EEFa ch\u00E2n tr\u00E2u truy\u1EC1n th\u1ED1ng",
+      "IsAvailable": true
+    },
+    {
+      "Id": "3ce8c0f9-9a98-461e-bf63-392a2b6ae5b6",
+      "Name": "N\u01B0\u1EDBc rau m\u00E1",
+      "BasePrice": 22000,
+      "Category": 0,
+      "ImagePath": "Images\\nuoc_rau_ma_20250928_150308.jpg",
+      "Description": "Rau m\u00E1 t\u01B0\u01A1i ngon nh\u1EADp kh\u1EA9u tr\u1EF1c ti\u1EBFp t\u1EEB Thanh H\u00F3a",
+      "IsAvailable": true
+    },
+    {
+      "Id": "bddd8254-1805-4997-9344-d9541f29e22d",
+      "Name": "Combo TS tr\u00E2n ch\u00E2u \u0111\u01B0\u1EDDng \u0111en \u002B 1 topping tr\u00E2n ch\u00E2u",
+      "BasePrice": 35000,
+      "Category": 0,
+      "ImagePath": "Images\\tra-sua-tran-chau-duong-den_20250928_150650.jpg",
+      "Description": "Combo TS tr\u00E2n ch\u00E2u \u0111\u01B0\u1EDDng \u0111en \u002B 1 topping tr\u00E2n ch\u00E2u",
+      "IsAvailable": true
+    },
+    {
+      "Id": "e097ee58-f31b-402d-bedf-9bf865e726db",
+      "Name": "Matcha latte l\u1EA1nh",
+      "BasePrice": 30000,
+      "Category": 0,
+      "ImagePath": "Images\\iced-matcha-latte_20250928_151005.jpg",
+      "Description": "Matcha latte n\u00F3ng, \u0111\u1EADm v\u1ECB",
+      "IsAvailable": true
+    },
+    {
+      "Id": "e731bc2d-255a-43bc-9ee9-91aa3f334e5b",
+      "Name": "Tr\u00E0 s\u1EEFa khoai m\u00F4n",
+      "BasePrice": 28000,
+      "Category": 0,
+      "ImagePath": "Images\\tra-sua-khoai-mon_20250928_151214.png",
+      "Description": "Tr\u00E0 s\u1EEFa khoai m\u00F4n th\u01A1n ngon",
+      "IsAvailable": true
+    },
+    {
+      "Id": "ce01cf0e-220a-4bc9-964c-445cb4fcbef8",
+      "Name": "Tr\u00E0 t\u1EAFc m\u1EADt ong",
+      "BasePrice": 18000,
+      "Category": 0,
+      "ImagePath": "Images\\tra_tac_mat_ong_20250928_151320.jpg",
+      "Description": "Tr\u00E0 t\u1EAFc m\u1EADt ong \u0111\u00E1",
+      "IsAvailable": true
+    },
+    {
+      "Id": "bf4ebf64-85b3-49ad-9d1a-8f19f77fbf1a",
+      "Name": "Tr\u00E0 s\u1EEFa d\u00E2u",
+      "BasePrice": 20000,
+      "Category": 0,
+      "ImagePath": "Images\\tra_dau_20250928_151442_20250928_151616.jpg",
+      "Description": "Tr\u00E0 s\u1EEFa d\u00E2u",
+      "IsAvailable": true
+    },
+    {
+      "Id": "19abab61-027c-4db5-97c6-d77b2589a66a",
+      "Name": "Tr\u00E0 s\u1EEFa s\u00F4cla",
+      "BasePrice": 25000,
+      "Category": 0,
+      "ImagePath": "Images\\tra_sua_s\u00F4cla_20250928_151741.jpg",
+      "Description": "Tr\u00E0 s\u1EEFa s\u00F4cla",
+      "IsAvailable": true
+    },
+    {
+      "Id": "9e765a6e-6962-471e-9020-71a2c12a50c1",
+      "Name": "Combo mua 2 t\u1EB7ng 1",
+      "BasePrice": 60000,
+      "Category": 0,
+      "ImagePath": "Images\\ts_truyen_thong_20250928_151908.jpg",
+      "Description": "Combo mua 2 TS truy\u1EC1n th\u1ED1ng t\u1EB7ng 1 topping b\u00E1nh flan",
+      "IsAvailable": true
+    }
+  ],
+  "ToppingItems": [
+    {
+      "Id": "46eb63b8-b046-47b2-a71b-a156f5f9da56",
+      "Name": "Tr\u00E2n ch\u00E2u tr\u1EAFng",
+      "BasePrice": 8000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Tr\u00E2n ch\u00E2u tr\u1EAFng m\u1EC1m m\u1ECBn",
+      "IsAvailable": true
+    },
+    {
+      "Id": "90fe5e33-de55-4ae8-b66c-67af861a9fd9",
+      "Name": "Tr\u00E2n ch\u00E2u ho\u00E0ng kim",
+      "BasePrice": 10000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Tr\u00E2n ch\u00E2u ho\u00E0ng kim \u0111\u1EB7c bi\u1EC7t",
+      "IsAvailable": true
+    },
+    {
+      "Id": "98723d7e-286a-40e9-879d-974f749ae381",
+      "Name": "Pudding",
+      "BasePrice": 12000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Pudding m\u1EC1m m\u1ECBn",
+      "IsAvailable": true
+    },
+    {
+      "Id": "833bcd9e-e4fe-4e47-b6b1-fa67f6a5c03d",
+      "Name": "Th\u1EA1ch c\u00E0 ph\u00EA",
+      "BasePrice": 10000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Th\u1EA1ch c\u00E0 ph\u00EA th\u01A1m \u0111\u1EADm \u0111\u00E0",
+      "IsAvailable": true
+    },
+    {
+      "Id": "66e3a5e7-2857-4173-a6d7-6622b8d4d808",
+      "Name": "Th\u1EA1ch d\u1EEBa",
+      "BasePrice": 10000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Th\u1EA1ch d\u1EEBa t\u01B0\u01A1i m\u00E1t",
+      "IsAvailable": true
+    },
+    {
+      "Id": "cd107bd3-559d-4a5c-afdd-704461966978",
+      "Name": "Kem cheese",
+      "BasePrice": 15000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "L\u1EDBp kem cheese m\u1EB7n ng\u1ECDt",
+      "IsAvailable": true
+    },
+    {
+      "Id": "cecdba6d-e579-403c-99f5-bb7d4fe042e8",
+      "Name": "\u0110\u1EADu \u0111\u1ECF",
+      "BasePrice": 8000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "\u0110\u1EADu \u0111\u1ECF b\u00F9i b\u00F9i",
+      "IsAvailable": true
+    },
+    {
+      "Id": "0d1301ff-20b2-4d93-bf94-3500324151ec",
+      "Name": "H\u1EA1t chia",
+      "BasePrice": 12000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "H\u1EA1t chia gi\u00E0u dinh d\u01B0\u1EE1ng",
+      "IsAvailable": true
+    },
+    {
+      "Id": "cceb80d9-34c0-4a88-aead-a8f675e1b30d",
+      "Name": "Jelly",
+      "BasePrice": 9000,
+      "Category": 1,
+      "ImagePath": "",
+      "Description": "Th\u1EA1ch jelly nhi\u1EC1u m\u00E0u s\u1EAFc",
+      "IsAvailable": true
+    },
+    {
+      "Id": "487cffa9-ae2f-4857-bf28-51438c9f3654",
+      "Name": "Tr\u00E2n ch\u00E2u \u0111en",
+      "BasePrice": 8000,
+      "Category": 1,
+      "ImagePath": "Images\\tp_tran_chau_den_20250928_152034.png",
+      "Description": "Topping ctr \u0111en",
+      "IsAvailable": true
+    }
+  ]
+}

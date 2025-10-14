@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\net8.0-windows\Images\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MilkTeaShop.Domain\MilkTeaShop.Domain.csproj" />
+    <ProjectReference Include="..\MilkTeaShop.Application\MilkTeaShop.Application.csproj" />
+    <ProjectReference Include="..\MilkTeaShop.Infrastructure\MilkTeaShop.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

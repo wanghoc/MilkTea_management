@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "CFL1zgBf8Vc=",
+  "success": true,
+  "projectFilePath": "D:\\Design pattern\\MilkTea_management\\MilkTeaShop.Application\\MilkTeaShop.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\quang\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.20\\microsoft.net.illink.tasks.8.0.20.nupkg.sha512",
+    "C:\\Users\\quang\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\8.0.20\\microsoft.netcore.app.runtime.win-x64.8.0.20.nupkg.sha512",
+    "C:\\Users\\quang\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\8.0.20\\microsoft.windowsdesktop.app.runtime.win-x64.8.0.20.nupkg.sha512",
+    "C:\\Users\\quang\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\8.0.20\\microsoft.aspnetcore.app.runtime.win-x64.8.0.20.nupkg.sha512",
+    "C:\\Users\\quang\\.nuget\\packages\\microsoft.netcore.app.crossgen2.win-x64\\8.0.20\\microsoft.netcore.app.crossgen2.win-x64.8.0.20.nupkg.sha512"
+  ],
+  "logs": []
+}

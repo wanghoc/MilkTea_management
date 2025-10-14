@@ -1,0 +1,33 @@
+﻿using System.Windows;
+using MilkTeaShop.Presentation.ViewModels;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class SettingsWindow : Window
+{
+    private readonly SettingsViewModel _viewModel;
+    
+    public SettingsWindow()
+    {
+        InitializeComponent();
+        _viewModel = new SettingsViewModel();
+        DataContext = _viewModel;
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        // Set DialogResult = true nếu có thay đổi để trigger refresh ở MainPOSViewModel
+        DialogResult = _viewModel.HasChanges;
+        Close();
+    }
+    
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        // Ensure DialogResult is set if changes were made
+        if (!DialogResult.HasValue && _viewModel.HasChanges)
+        {
+            DialogResult = true;
+        }
+        base.OnClosing(e);
+    }
+}

@@ -1,0 +1,192 @@
+using MilkTeaShop.Domain.Interfaces;
+
+namespace MilkTeaShop.Domain.Patterns.Decorator;
+
+// ✨ NEW: Dynamic Topping Decorator - tự động lấy giá từ database
+public class DynamicTopping : DrinkDecorator
+{
+    private readonly string _toppingName;
+    private readonly decimal _toppingPrice;
+
+    public DynamicTopping(IPriceable inner, string toppingName, decimal toppingPrice) : base(inner) 
+    { 
+        _toppingName = toppingName;
+        _toppingPrice = toppingPrice;
+    }
+    
+    public override decimal GetPrice() => base.GetPrice() + _toppingPrice;
+    public override string GetDescription() => base.GetDescription() + $" + {_toppingName}";
+}
+
+// Existing Topping Decorators
+public class BlackPearlTopping : DrinkDecorator
+{
+    public BlackPearlTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 8000m;
+    public override string GetDescription() => base.GetDescription() + " + Trân châu đen";
+}
+
+public class WhitePearlTopping : DrinkDecorator
+{
+    public WhitePearlTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 8000m;
+    public override string GetDescription() => base.GetDescription() + " + Trân châu trắng";
+}
+
+public class GoldenPearlTopping : DrinkDecorator
+{
+    public GoldenPearlTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 12000m;
+    public override string GetDescription() => base.GetDescription() + " + Trân châu hoàng kim";
+}
+
+public class CrystalPearlTopping : DrinkDecorator
+{
+    public CrystalPearlTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 10000m;
+    public override string GetDescription() => base.GetDescription() + " + Trân châu sương mai";
+}
+
+public class BrownSugarPearlTopping : DrinkDecorator
+{
+    public BrownSugarPearlTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 15000m;
+    public override string GetDescription() => base.GetDescription() + " + Trân châu đường đen";
+}
+
+// Jelly Decorators
+public class CoffeeJellyTopping : DrinkDecorator
+{
+    public CoffeeJellyTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 10000m;
+    public override string GetDescription() => base.GetDescription() + " + Thạch cà phê";
+}
+
+public class CoconutJellyTopping : DrinkDecorator
+{
+    public CoconutJellyTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 9000m;
+    public override string GetDescription() => base.GetDescription() + " + Thạch dừa";
+}
+
+public class FruitJellyTopping : DrinkDecorator
+{
+    public FruitJellyTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 11000m;
+    public override string GetDescription() => base.GetDescription() + " + Thạch trái cây";
+}
+
+public class CheeseJellyTopping : DrinkDecorator
+{
+    public CheeseJellyTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 13000m;
+    public override string GetDescription() => base.GetDescription() + " + Thạch phô mai";
+}
+
+public class AgarJellyTopping : DrinkDecorator
+{
+    public AgarJellyTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 8000m;
+    public override string GetDescription() => base.GetDescription() + " + Thạch rau câu";
+}
+
+public class ColorfulJellyTopping : DrinkDecorator
+{
+    public ColorfulJellyTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 10000m;
+    public override string GetDescription() => base.GetDescription() + " + Jelly rainbow";
+}
+
+// Cream and Dessert Decorators
+public class CreamCheeseTopping : DrinkDecorator
+{
+    public CreamCheeseTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 18000m;
+    public override string GetDescription() => base.GetDescription() + " + Kem cheese";
+}
+
+public class PuddingTopping : DrinkDecorator
+{
+    public PuddingTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 14000m;
+    public override string GetDescription() => base.GetDescription() + " + Pudding";
+}
+
+public class FlanTopping : DrinkDecorator
+{
+    public FlanTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 15000m;
+    public override string GetDescription() => base.GetDescription() + " + Flan";
+}
+
+public class RicePaperTopping : DrinkDecorator
+{
+    public RicePaperTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 12000m;
+    public override string GetDescription() => base.GetDescription() + " + Bánh tráng nướng";
+}
+
+// Bean and Seed Decorators
+public class RedBeanTopping : DrinkDecorator
+{
+    public RedBeanTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 9000m;
+    public override string GetDescription() => base.GetDescription() + " + Đậu đỏ";
+}
+
+public class GreenBeanTopping : DrinkDecorator
+{
+    public GreenBeanTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 9000m;
+    public override string GetDescription() => base.GetDescription() + " + Đậu xanh";
+}
+
+public class ChiaSeedTopping : DrinkDecorator
+{
+    public ChiaSeedTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 12000m;
+    public override string GetDescription() => base.GetDescription() + " + Hạt chia";
+}
+
+public class LotusSeedTopping : DrinkDecorator
+{
+    public LotusSeedTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 11000m;
+    public override string GetDescription() => base.GetDescription() + " + Hạt sen";
+}
+
+public class CashewTopping : DrinkDecorator
+{
+    public CashewTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 16000m;
+    public override string GetDescription() => base.GetDescription() + " + Hạt điều";
+}
+
+// Fruit and Herb Decorators
+public class FreshFruitTopping : DrinkDecorator
+{
+    public FreshFruitTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 20000m;
+    public override string GetDescription() => base.GetDescription() + " + Trái cây tươi";
+}
+
+public class AloeVeraTopping : DrinkDecorator
+{
+    public AloeVeraTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 10000m;
+    public override string GetDescription() => base.GetDescription() + " + Nha đam";
+}
+
+public class GrassJellyTopping : DrinkDecorator
+{
+    public GrassJellyTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 9000m;
+    public override string GetDescription() => base.GetDescription() + " + Sương sáo";
+}
+
+public class PurpleTaroTopping : DrinkDecorator
+{
+    public PurpleTaroTopping(IPriceable inner) : base(inner) { }
+    public override decimal GetPrice() => base.GetPrice() + 12000m;
+    public override string GetDescription() => base.GetDescription() + " + Khoai môn tím";
+}

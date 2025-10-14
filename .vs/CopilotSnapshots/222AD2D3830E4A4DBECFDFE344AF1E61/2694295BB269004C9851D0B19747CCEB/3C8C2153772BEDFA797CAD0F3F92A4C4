@@ -1,0 +1,18 @@
+﻿using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.Patterns.Strategy;
+
+namespace MilkTeaShop.Application.Facades;
+
+public class ShopFacade
+{
+    public Order CurrentOrder { get; private set; } = new();
+
+    public void NewOrder() => CurrentOrder = new Order();
+
+    public void ApplyPromotion(IPromotionStrategy strategy)
+    {
+        var subtotal = CurrentOrder.Subtotal;
+        var discount = strategy.CalculateDiscount(subtotal);
+        CurrentOrder.ApplyDiscount(discount);
+    }
+}

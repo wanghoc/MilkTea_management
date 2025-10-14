@@ -1,0 +1,85 @@
+﻿using System.Collections.ObjectModel;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.Patterns.Builder;
+using MilkTeaShop.Domain.Patterns.Decorator;
+using MilkTeaShop.Domain.Patterns.Strategy;
+using MilkTeaShop.Presentation.ViewModels;
+
+namespace MilkTeaShop.Presentation.ViewModels;
+
+public class POSViewModel : BaseViewModel
+{
+    public ObservableCollection<string> Items { get; } = new();
+    private Order _order = new();
+
+    public string SubtotalText => $"Subtotal: {_order.Subtotal:0,0}";
+    public string DiscountText => $"Discount: {_order.Discount:0,0}";
+    public string TotalText => $"Total: {_order.Total:0,0}";
+    public string StatusText => $"State: {_order.State.Name}";
+
+    public RelayCommand AddPearlTeaCommand { get; }
+    public RelayCommand AddCheeseTeaCommand { get; }
+    public RelayCommand NewOrderCommand { get; }
+    public RelayCommand ApplyPercentOffCommand { get; }
+    public RelayCommand CheckoutCommand { get; }
+
+    public POSViewModel()
+    {
+        AddPearlTeaCommand = new RelayCommand(AddPearlTea);
+        AddCheeseTeaCommand = new RelayCommand(AddCheeseTea);
+        NewOrderCommand = new RelayCommand(NewOrder);
+        ApplyPercentOffCommand = new RelayCommand(Apply20Percent);
+        CheckoutCommand = new RelayCommand(Checkout);
+    }
+
+    private void AddPearlTea()
+    {
+        var builder = new OrderItemBuilder()
+            .SetBaseDrink(new Drink { Name = "Milk Tea", BasePrice = 25000 })
+            .AddTopping(inner => new PearlTopping(inner));
+        var item = builder.Build();
+        _order.AddItem(item);
+        Items.Add(item.ToString());
+        RefreshTotals();
+    }
+
+    private void AddCheeseTea()
+    {
+        var builder = new OrderItemBuilder()
+            .SetBaseDrink(new Drink { Name = "Milk Tea", BasePrice = 25000 })
+            .AddTopping(inner => new CheeseFoamTopping(inner));
+        var item = builder.Build();
+        _order.AddItem(item);
+        Items.Add(item.ToString());
+        RefreshTotals();
+    }
+
+    private void NewOrder()
+    {
+        _order = new Order();
+        Items.Clear();
+        RefreshTotals();
+    }
+
+    private void Apply20Percent()
+    {
+        var strat = new PercentDiscountStrategy(0.2m);
+        var discount = strat.CalculateDiscount(_order.Subtotal);
+        _order.ApplyDiscount(discount);
+        RefreshTotals();
+    }
+
+    private void Checkout()
+    {
+        _order.Checkout();
+        RefreshTotals();
+    }
+
+    private void RefreshTotals()
+    {
+        OnPropertyChanged(nameof(SubtotalText));
+        OnPropertyChanged(nameof(DiscountText));
+        OnPropertyChanged(nameof(TotalText));
+        OnPropertyChanged(nameof(StatusText));
+    }
+}

@@ -1,0 +1,33 @@
+using System.Windows;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class NoteWindow : Window
+{
+    public NoteWindow()
+    {
+        InitializeComponent();
+        DataContext = this;
+    }
+
+    public static readonly DependencyProperty NoteTextProperty =
+        DependencyProperty.Register(nameof(NoteText), typeof(string), typeof(NoteWindow), new PropertyMetadata(string.Empty));
+
+    public string NoteText
+    {
+        get => (string)GetValue(NoteTextProperty);
+        set => SetValue(NoteTextProperty, value);
+    }
+
+    private void OK_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = true;
+        Close();
+    }
+
+    private void Cancel_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        Close();
+    }
+}

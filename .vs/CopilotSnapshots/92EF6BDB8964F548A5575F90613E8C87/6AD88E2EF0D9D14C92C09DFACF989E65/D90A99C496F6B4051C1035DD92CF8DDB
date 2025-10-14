@@ -1,0 +1,172 @@
+﻿<Window x:Class="MilkTeaShop.Presentation.AddEditItemWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:MilkTeaShop.Presentation.Converters"
+        Title="WangHoc Milk Tea - Thêm/Sửa món" Height="600" Width="650"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Background="#F0F8FF">
+    
+    <Window.Resources>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style x:Key="LabelStyle" TargetType="Label">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#2E8B57"/>
+        </Style>
+        
+        <Style x:Key="TextBoxStyle" TargetType="TextBox">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderBrush" Value="#DDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+        
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Gray" Direction="315" ShadowDepth="2" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header với gradient đẹp -->
+        <Border Grid.Row="0" CornerRadius="0,0,20,20" Margin="0,0,0,25">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#FF6B47" Offset="0"/>
+                    <GradientStop Color="#FF8E53" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Orientation="Horizontal" Margin="30,20" HorizontalAlignment="Center">
+                <TextBlock Text="🧋" FontSize="32" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="WangHoc Milk Tea" FontSize="20" Style="{StaticResource HeaderTextStyle}"/>
+                    <TextBlock Text="{Binding Title}" FontSize="16" Style="{StaticResource HeaderTextStyle}" 
+                             Opacity="0.9" Margin="0,5,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- Form với card styling -->
+        <Border Grid.Row="1" Background="White" CornerRadius="15" Margin="30,0,30,0" 
+                Padding="30" Effect="{StaticResource {x:Static SystemParameters.DropShadowKey}}">
+            <ScrollViewer>
+                <StackPanel>
+                    <!-- Category -->
+                    <StackPanel Margin="0,0,0,20">
+                        <Label Content="📂 Loại món:" Style="{StaticResource LabelStyle}"/>
+                        <ComboBox ItemsSource="{Binding Categories}" 
+                                  SelectedItem="{Binding SelectedCategory}" 
+                                  DisplayMemberPath="DisplayName"
+                                  FontSize="14" Padding="10" Height="40"/>
+                    </StackPanel>
+                    
+                    <!-- Name -->
+                    <StackPanel Margin="0,0,0,20">
+                        <Label Content="📝 Tên món:" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding Name}" Style="{StaticResource TextBoxStyle}" Height="40"/>
+                    </StackPanel>
+                    
+                    <!-- Price -->
+                    <StackPanel Margin="0,0,0,20">
+                        <Label Content="💰 Giá (đồng):" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding BasePrice}" Style="{StaticResource TextBoxStyle}" Height="40"/>
+                    </StackPanel>
+                    
+                    <!-- Description -->
+                    <StackPanel Margin="0,0,0,20">
+                        <Label Content="📋 Mô tả:" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding Description}" Height="90" 
+                                 TextWrapping="Wrap" AcceptsReturn="True" 
+                                 VerticalScrollBarVisibility="Auto" 
+                                 Style="{StaticResource TextBoxStyle}"/>
+                    </StackPanel>
+                    
+                    <!-- Image Section -->
+                    <StackPanel Margin="0,0,0,20">
+                        <Label Content="🖼️ Hình ảnh:" Style="{StaticResource LabelStyle}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox Grid.Column="0" Text="{Binding ImagePath}" 
+                                     IsReadOnly="True" Style="{StaticResource TextBoxStyle}" 
+                                     Height="40" Margin="0,0,15,0"/>
+                            <Button Grid.Column="1" Content="📁 Chọn ảnh" 
+                                    Command="{Binding SelectImageCommand}" 
+                                    Padding="15,10" Background="#4169E1" Foreground="White"
+                                    FontSize="14" Style="{StaticResource ModernButtonStyle}"/>
+                        </Grid>
+                    </StackPanel>
+                    
+                    <!-- Image Preview -->
+                    <Border BorderBrush="#DDD" BorderThickness="2" 
+                            Width="220" Height="180" CornerRadius="12" Margin="0,0,0,20"
+                            Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}}">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#F8F8F8" Offset="0"/>
+                                <GradientStop Color="#E8E8E8" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Image Source="{Binding ImagePath}" Stretch="UniformToFill"/>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Instructions với styling đẹp -->
+                    <Border Background="#FFF8DC" CornerRadius="12" Padding="20" Margin="0,10,0,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBlock Text="💡" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Hướng dẫn về ảnh:" FontWeight="Bold" FontSize="14" 
+                                         Foreground="#D2691E" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#8B4513" LineHeight="18">
+                                <Run Text="• Kích thước khuyến nghị: 300x300 pixels (tỷ lệ 1:1)"/><LineBreak/>
+                                <Run Text="• Định dạng hỗ trợ: JPG, PNG, GIF, BMP"/><LineBreak/>
+                                <Run Text="• Dung lượng tối đa: 5MB"/><LineBreak/>
+                                <Run Text="• Nên sử dụng ảnh có chất lượng cao và rõ nét"/><LineBreak/>
+                                <Run Text="• Ảnh sẽ được tự động sao chép vào thư mục 'Images'"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+        
+        <!-- Buttons với styling đẹp -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                    HorizontalAlignment="Right" Margin="30,25,30,25" Spacing="15">
+            <Button Content="💾 Lưu" Command="{Binding SaveCommand}" 
+                    Background="#32CD32" Foreground="White" 
+                    Padding="25,12" FontSize="16" CornerRadius="10" Style="{StaticResource ModernButtonStyle}"/>
+            <Button Content="❌ Hủy" Command="{Binding CancelCommand}" 
+                    Background="#FF6347" Foreground="White" 
+                    Padding="25,12" FontSize="16" CornerRadius="10" Style="{StaticResource ModernButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Window>

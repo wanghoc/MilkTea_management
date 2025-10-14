@@ -1,0 +1,19 @@
+using System.Windows;
+using MilkTeaShop.Presentation.ViewModels;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class SettingsWindow : Window
+{
+    public SettingsWindow()
+    {
+        InitializeComponent();
+        DataContext = new SettingsViewModel();
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        Close();
+    }
+}

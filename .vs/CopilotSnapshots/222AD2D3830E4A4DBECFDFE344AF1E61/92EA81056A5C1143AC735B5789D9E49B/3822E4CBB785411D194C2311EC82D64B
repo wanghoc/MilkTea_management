@@ -1,0 +1,75 @@
+﻿using MilkTeaShop.Domain.Interfaces;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Domain.Data;
+
+namespace MilkTeaShop.Domain.Entities;
+
+public class OrderItem
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public IPriceable Drink { get; set; }
+    public SizeOption Size { get; set; } = SizeOption.Medium;
+    public int Quantity { get; set; } = 1;
+    public string SugarLevel { get; set; } = "100%"; // 0%, 25%, 50%, 75%, 100%
+    public string IceLevel { get; set; } = "100%"; // 0%, 25%, 50%, 75%, 100%
+    public List<string> Toppings { get; set; } = new();
+    public string Description => Drink.GetDescription();
+    
+    // Property for displaying details in the cart
+    public string Details 
+    {
+        get
+        {
+            var parts = new List<string>
+            {
+                $"SL: {Quantity}",
+                $"Size: {Size}",
+                $"Đường: {SugarLevel}",
+                $"Đá: {IceLevel}"
+            };
+            
+            if (Toppings.Any())
+            {
+                // Calculate topping prices for display
+                decimal toppingTotal = 0;
+                var toppingPrices = new List<string>();
+                foreach (var topping in Toppings)
+                {
+                    var toppingItem = StaticMenuData.ToppingItems.FirstOrDefault(t => t.Name == topping);
+                    if (toppingItem != null)
+                    {
+                        toppingTotal += toppingItem.BasePrice;
+                        toppingPrices.Add($"{topping} (+{toppingItem.BasePrice:N0}đ)");
+                    }
+                    else
+                    {
+                        toppingPrices.Add(topping);
+                    }
+                }
+                parts.Add($"Topping: {string.Join(", ", toppingPrices)}");
+            }
+            
+            return string.Join(" | ", parts);
+        }
+    }
+
+    public OrderItem(IPriceable drink) => Drink = drink;
+
+    public decimal GetPrice() 
+    {
+        // Get the price from the decorated drink (includes all toppings via decorator pattern)
+        var drinkPriceWithToppings = Drink.GetPrice();
+        
+        // Apply size adjustment to the final price (including toppings)
+        return StaticMenuData.CalculatePriceBySize(drinkPriceWithToppings, Size);
+    }
+    
+    public decimal LineTotal => GetPrice() * Quantity;
+    
+    public override string ToString()
+    {
+        var toppingsText = Toppings.Any() ? $" + {string.Join(", ", Toppings)}" : "";
+        var customText = $" (Đường: {SugarLevel}, Đá: {IceLevel})";
+        return $"{Quantity}x {Description}{toppingsText} ({Size}){customText} - {LineTotal:N0}đ";
+    }
+}

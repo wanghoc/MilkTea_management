@@ -1,0 +1,23 @@
+D:\MilkTeaShop\MilkTeaShop.Domain\bin\Release\net8.0\MilkTeaShop.Domain.deps.json
+D:\MilkTeaShop\MilkTeaShop.Domain\bin\Release\net8.0\MilkTeaShop.Domain.dll
+D:\MilkTeaShop\MilkTeaShop.Domain\bin\Release\net8.0\MilkTeaShop.Domain.pdb
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.AssemblyInfoInputs.cache
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.AssemblyInfo.cs
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.csproj.CoreCompileInputs.cache
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.sourcelink.json
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.dll
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\refint\MilkTeaShop.Domain.dll
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.pdb
+D:\MilkTeaShop\MilkTeaShop.Domain\obj\Release\net8.0\ref\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\bin\Release\net8.0\MilkTeaShop.Domain.deps.json
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\bin\Release\net8.0\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\bin\Release\net8.0\MilkTeaShop.Domain.pdb
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.AssemblyInfoInputs.cache
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.AssemblyInfo.cs
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.csproj.CoreCompileInputs.cache
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Release\net8.0\refint\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Release\net8.0\MilkTeaShop.Domain.pdb
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Release\net8.0\ref\MilkTeaShop.Domain.dll

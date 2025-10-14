@@ -1,0 +1,254 @@
+using System;
+using System.Linq;
+using System.Windows;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Infrastructure.Services;
+using MilkTeaShop.Application.Services; // Add this line for IMenuService
+using MilkTeaShop.Presentation.Auth; // Add this line for CurrentUser
+
+namespace MilkTeaShop.Presentation
+{
+    public partial class ManagerWorkWindow : Window
+    {
+        private readonly IUserService _userService;
+        private readonly IMenuService _menuService;
+
+        public ManagerWorkWindow()
+        {
+            Console.WriteLine("Starting ManagerWorkWindow initialization...");
+            
+            try
+            {
+                // Initialize window first
+                InitializeComponent();
+                Console.WriteLine("Window components initialized");
+                
+                // Force maximize window
+                this.WindowState = WindowState.Maximized;
+                Console.WriteLine("Window state set to Maximized");
+                
+                // Verify logged in user (but don't crash if not found)
+                if (!CurrentUser.Instance.IsLoggedIn || CurrentUser.Instance.LoggedInUser == null)
+                {
+                    Console.WriteLine("WARNING: No logged-in user when ManagerWorkWindow constructor called");
+                    // Don't restart application, just show a warning
+                    MessageBox.Show("Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.", 
+                                   "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    Console.WriteLine($"Logged in user confirmed: {CurrentUser.Instance.LoggedInUser.FullName} ({CurrentUser.Instance.LoggedInUser.Role})");
+                    
+                    // Update UI for current user
+                    UpdateUIForCurrentUser();
+                    Console.WriteLine("UI updated for current user");
+                }
+                
+                // Initialize services safely
+                try
+                {
+                    _userService = new EfUserService(); // Use EF-based service
+                    _menuService = new EfMenuService();
+                    Console.WriteLine("Services initialized successfully");
+                    
+                    // Load quick info after services are ready
+                    LoadQuickInfo();
+                }
+                catch (Exception serviceEx)
+                {
+                    Console.WriteLine($"Warning: Service initialization failed: {serviceEx.Message}");
+                    // Don't crash, just show warning
+                    MessageBox.Show($"Một số dịch vụ không khởi tạo được: {serviceEx.Message}\n\nỨng dụng vẫn có thể hoạt động.", 
+                                   "Cảnh báo dịch vụ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                
+                Console.WriteLine("ManagerWorkWindow initialization completed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR in ManagerWorkWindow constructor: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                
+                // Don't restart application, just show error and continue
+                MessageBox.Show($"Có lỗi khi khởi tạo cửa sổ quản lý: {ex.Message}\n\nỨng dụng sẽ tiếp tục hoạt động với chức năng hạn chế.", 
+                              "Lỗi khởi tạo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void RestartApplication()
+        {
+            try
+            {
+                Console.WriteLine("Restarting application...");
+                CurrentUser.Instance.Logout(); // Clear user session
+                System.Windows.Application.Current.Shutdown();
+                System.Diagnostics.Process.Start(System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName!);
+            }
+            catch
+            {
+                System.Windows.Application.Current.Shutdown();
+            }
+        }
+
+        private void UpdateUIForCurrentUser()
+        {
+            if (!CurrentUser.Instance.IsLoggedIn) return;
+
+            var user = CurrentUser.Instance.LoggedInUser!;
+            
+            // Update welcome text
+            var welcomeText = this.FindName("WelcomeText") as System.Windows.Controls.TextBlock;
+            var roleText = this.FindName("RoleText") as System.Windows.Controls.TextBlock;
+            
+            if (welcomeText != null)
+                welcomeText.Text = $"Xin chào, {user.FullName}";
+            
+            if (roleText != null)
+                roleText.Text = $"Vai trò: {CurrentUser.Instance.GetRoleDisplayName()}";
+            
+            Console.WriteLine($"Manager interface updated for: {user.FullName} ({user.Role})");
+        }
+
+        private async void LoadQuickInfo()
+        {
+            try
+            {
+                // Load employee count
+                var users = await _userService.GetAllUsersAsync();
+                var activeEmployees = users.Where(u => u.IsActive && u.Role == UserRole.Employee).Count();
+                
+                var employeeCountText = this.FindName("EmployeeCountText") as System.Windows.Controls.TextBlock;
+                if (employeeCountText != null)
+                    employeeCountText.Text = $"{activeEmployees} nhân viên";
+
+                // Load menu items count
+                var menuItems = await _menuService.GetAllItemsAsync();
+                var menuItemsText = this.FindName("MenuItemsText") as System.Windows.Controls.TextBlock;
+                if (menuItemsText != null)
+                    menuItemsText.Text = $"{menuItems.Count()} sản phẩm";
+
+                // Update system status
+                var systemStatusText = this.FindName("SystemStatusText") as System.Windows.Controls.TextBlock;
+                if (systemStatusText != null)
+                    systemStatusText.Text = "Hoạt động bình thường";
+
+                // Today's sales (placeholder)
+                var todaySalesText = this.FindName("TodaySalesText") as System.Windows.Controls.TextBlock;
+                if (todaySalesText != null)
+                    todaySalesText.Text = "Chưa có dữ liệu";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading quick info: {ex.Message}");
+            }
+        }
+
+        private void ChangePassword_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var changePasswordWindow = new ChangePasswordWindow();
+                changePasswordWindow.Owner = this;
+                changePasswordWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi mở cửa sổ đổi mật khẩu: {ex.Message}", 
+                               "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Bạn có chắc muốn đăng xuất?", 
+                "Xác nhận đăng xuất",
+                MessageBoxButton.YesNo, 
+                MessageBoxImage.Question);
+                
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    Console.WriteLine("Manager logging out...");
+                    CurrentUser.Instance.Logout();
+                    
+                    // Close current window and restart app with login
+                    RestartApplication();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error during logout: {ex.Message}");
+                    MessageBox.Show($"Lỗi đăng xuất: {ex.Message}", 
+                                   "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void OpenPOS_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var posWindow = new MainWindow();
+                posWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi mở hệ thống POS: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OpenReports_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var reportsWindow = new SalesReportWindow();
+                reportsWindow.Owner = this;
+                reportsWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi mở báo cáo: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OpenMenuManagement_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var settingsWindow = new SettingsWindow();
+                settingsWindow.Owner = this;
+                settingsWindow.ShowDialog();
+                
+                // Refresh info after menu management
+                LoadQuickInfo();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi mở quản lý menu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OpenUserManagement_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var userManagementWindow = new UserManagementWindow(canEditUsers: true);
+                userManagementWindow.Owner = this;
+                userManagementWindow.ShowDialog();
+                
+                // Refresh info after user management
+                LoadQuickInfo();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi mở quản lý nhân viên: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RefreshInfo_Click(object sender, RoutedEventArgs e)
+        {
+            LoadQuickInfo();
+        }
+    }
+}

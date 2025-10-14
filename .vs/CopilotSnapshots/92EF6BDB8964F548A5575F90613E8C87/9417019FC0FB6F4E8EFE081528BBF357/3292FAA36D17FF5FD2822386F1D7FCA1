@@ -1,0 +1,112 @@
+﻿using System.Windows;
+using Microsoft.Win32;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Application.Services;
+using System.Windows.Media.Imaging;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class SettingsWindow : Window
+{
+    private readonly IMenuService _menuService;
+
+    public SettingsWindow()
+    {
+        InitializeComponent();
+        _menuService = new MenuService();
+        CategoryComboBox.SelectedIndex = 0; // Default to MilkTea
+    }
+
+    private void SelectImage_Click(object sender, RoutedEventArgs e)
+    {
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "Image files (*.png;*.jpg;*.jpeg;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp|All files (*.*)|*.*",
+            Title = "Chọn hình ảnh"
+        };
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            ImagePathTextBox.Text = openFileDialog.FileName;
+            
+            try
+            {
+                var bitmap = new BitmapImage(new Uri(openFileDialog.FileName));
+                PreviewImage.Source = bitmap;
+            }
+            catch
+            {
+                MessageBox.Show("Không thể tải hình ảnh. Vui lòng chọn file hình ảnh hợp lệ.", 
+                               "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+    }
+
+    private void AddItem_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(NameTextBox.Text))
+            {
+                MessageBox.Show("Vui lòng nhập tên món!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!decimal.TryParse(PriceTextBox.Text, out decimal price) || price <= 0)
+            {
+                MessageBox.Show("Vui lòng nhập giá hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (CategoryComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("Vui lòng chọn loại món!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Create new menu item
+            var selectedCategory = ((System.Windows.Controls.ComboBoxItem)CategoryComboBox.SelectedItem).Tag.ToString();
+            var category = selectedCategory == "MilkTea" ? MenuCategory.MilkTea : MenuCategory.Topping;
+
+            var newItem = new MenuItem
+            {
+                Name = NameTextBox.Text.Trim(),
+                BasePrice = price,
+                Category = category,
+                Description = DescriptionTextBox.Text.Trim(),
+                ImagePath = ImagePathTextBox.Text.Trim()
+            };
+
+            // Add to menu
+            _menuService.AddNewItem(newItem);
+
+            MessageBox.Show($"Đã thêm món '{newItem.Name}' thành công!", "Thông báo", 
+                           MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // Clear form
+            ClearForm();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi thêm món: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void ClearForm()
+    {
+        NameTextBox.Clear();
+        PriceTextBox.Clear();
+        DescriptionTextBox.Clear();
+        ImagePathTextBox.Clear();
+        CategoryComboBox.SelectedIndex = 0;
+        PreviewImage.Source = null;
+    }
+}

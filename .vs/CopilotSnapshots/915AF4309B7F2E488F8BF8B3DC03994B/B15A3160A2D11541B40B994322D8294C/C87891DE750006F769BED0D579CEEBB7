@@ -1,0 +1,7 @@
+﻿using System.Windows;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class App : System.Windows.Application
+{
+}

@@ -1,0 +1,68 @@
+﻿using MilkTeaShop.Domain.Entities;
+
+namespace MilkTeaShop.Application.Services;
+
+public interface IReceiptService
+{
+    string GenerateReceipt(Order order, string customerNote = "");
+    void PrintReceipt(string receipt);
+}
+
+public class ReceiptService : IReceiptService
+{
+    public string GenerateReceipt(Order order, string customerNote = "")
+    {
+        var receipt = $"""
+        ========================================
+                    TRÀ SỮA NGON
+        ========================================
+        Mã đơn hàng: {order.Id[..8]}
+        Thời gian: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
+        ========================================
+        CHI TIẾT ĐĐN HÀNG:
+        ========================================
+        """;
+
+        foreach (var item in order.Items)
+        {
+            receipt += $"""
+            {item.Description}
+            Size: {item.Size}
+            SL: {item.Quantity} x {item.GetPrice():N0}đ = {item.LineTotal():N0}đ
+            ----------------------------------------
+            """;
+        }
+
+        receipt += $"""
+        ========================================
+        Tạm tính: {order.Subtotal:N0}đ
+        Giảm giá: -{order.Discount:N0}đ
+        TỔNG CỘNG: {order.Total:N0}đ
+        ========================================
+        """;
+
+        if (!string.IsNullOrEmpty(customerNote))
+        {
+            receipt += $"""
+            Ghi chú: {customerNote}
+            ========================================
+            """;
+        }
+
+        receipt += """
+        Cảm ơn quý khách đã sử dụng dịch vụ!
+        Hẹn gặp lại!
+        ========================================
+        """;
+
+        return receipt;
+    }
+
+    public void PrintReceipt(string receipt)
+    {
+        // Trong thực tế sẽ gửi đến máy in
+        // Hiện tại chỉ hiển thị trong console/log
+        Console.WriteLine("PRINTING RECEIPT:");
+        Console.WriteLine(receipt);
+    }
+}

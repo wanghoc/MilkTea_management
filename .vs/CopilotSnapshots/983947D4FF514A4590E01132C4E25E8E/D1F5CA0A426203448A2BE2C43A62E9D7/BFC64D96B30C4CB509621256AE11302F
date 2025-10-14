@@ -1,0 +1,99 @@
+﻿using System.Diagnostics;
+using System.IO;
+using System.Windows;
+
+namespace MilkTeaShop.Presentation.Helpers;
+
+public static class DatabaseHelper
+{
+    public static void OpenWithDBBrowser(string dbPath)
+    {
+        try
+        {
+            // Thử mở với DB Browser for SQLite
+            var dbBrowserPaths = new[]
+            {
+                @"C:\Program Files\DB Browser for SQLite\DB Browser for SQLite.exe",
+                @"C:\Program Files (x86)\DB Browser for SQLite\DB Browser for SQLite.exe",
+                @"DB Browser for SQLite.exe", // If in PATH
+                "sqlitebrowser.exe" // Alternative name
+            };
+
+            foreach (var path in dbBrowserPaths)
+            {
+                if (File.Exists(path) || path.Contains(".exe"))
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = path,
+                            Arguments = $"\"{dbPath}\"",
+                            UseShellExecute = true
+                        });
+                        return;
+                    }
+                    catch { continue; }
+                }
+            }
+
+            // Fallback: Mở folder chứa database
+            var folder = Path.GetDirectoryName(dbPath);
+            if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder))
+            {
+                Process.Start("explorer.exe", $"/select,\"{dbPath}\"");
+                
+                MessageBox.Show(
+                    "Không tìm thấy DB Browser for SQLite!\n\n" +
+                    "Để chỉnh sửa database trực tiếp:\n" +
+                    "1. Tải DB Browser for SQLite tại: https://sqlitebrowser.org/\n" +
+                    "2. Cài đặt và mở file: milktea.db\n" +
+                    "3. Vào tab 'Browse Data' để xem/sửa dữ liệu\n\n" +
+                    "File database đã được mở trong Explorer.",
+                    "Hướng dẫn", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi mở database: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    public static void ShowDatabaseInstructions()
+    {
+        var message = @"🔧 HƯỚNG DẪN CHỈNH SỬA DATABASE TRỰC TIẾP
+
+📥 Tải DB Browser for SQLite:
+   → https://sqlitebrowser.org/
+   → Miễn phí, dễ sử dụng
+
+🗄️ Mở Database:
+   1. Khởi động DB Browser for SQLite
+   2. File → Open Database
+   3. Chọn file: milktea.db
+
+📊 Chỉnh sửa dữ liệu:
+   1. Tab 'Browse Data'
+   2. Chọn table 'Receipts'
+   3. Double-click vào ô cần sửa
+   4. Sửa giá trị (ví dụ: Total từ 0 → 45000)
+   5. Ctrl+S để lưu
+
+⚠️ LƯU Ý:
+   - Đóng ứng dụng WangHoc trước khi sửa
+   - Backup file .db trước khi sửa
+   - Kiểm tra lại sau khi sửa
+
+🔍 Các cột quan trọng trong table Receipts:
+   - Id: Mã hóa đơn
+   - Total: Tổng tiền (TEXT format: ""45000.00"")
+   - Subtotal: Tạm tính  
+   - PurchaseTime: Thời gian mua";
+
+        MessageBox.Show(message, "Hướng dẫn Database", 
+                       MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+}

@@ -1,0 +1,444 @@
+﻿using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
+using Microsoft.Win32;
+using System.Windows.Media.Imaging;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Application.Services;
+using MilkTeaShop.Domain.Data;
+using MilkTeaShop.Presentation.Models;
+
+namespace MilkTeaShop.Presentation.ViewModels;
+
+public class AddEditItemViewModel : BaseViewModel
+{
+    private readonly Window _window;
+    private IMenuService? _menuService;
+    private MenuItem? _editingItem;
+    private bool _isEditMode;
+
+    private string _name = "";
+    private decimal _basePrice;
+    private string _description = "";
+    private string _imagePath = "";
+    private MenuCategoryDisplayItem _selectedCategory;
+
+    public ObservableCollection<MenuCategoryDisplayItem> Categories { get; } = new()
+    {
+        new MenuCategoryDisplayItem(MenuCategory.MilkTea),
+        new MenuCategoryDisplayItem(MenuCategory.Topping)
+    };
+
+    public RelayCommand SelectImageCommand { get; private set; }
+    public RelayCommand SaveCommand { get; private set; }
+    public RelayCommand CancelCommand { get; private set; }
+
+    public AddEditItemViewModel(Window window)
+    {
+        try
+        {
+            _window = window;
+            _selectedCategory = Categories[0]; // Default to MilkTea
+            
+            SelectImageCommand = new RelayCommand(SelectImage);
+            SaveCommand = new RelayCommand(Save, CanSave);
+            CancelCommand = new RelayCommand(Cancel);
+            
+            // Create Images directory if it doesn't exist
+            EnsureImagesDirectoryExists();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khởi tạo cửa sổ thêm/sửa món: {ex.Message}", "Lỗi nghiêm trọng", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    public string Title => _isEditMode ? "Chỉnh sửa món" : "Thêm món mới";
+
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            _name = value ?? "";
+            OnPropertyChanged();
+            SaveCommand?.RaiseCanExecuteChanged();
+        }
+    }
+
+    public decimal BasePrice
+    {
+        get => _basePrice;
+        set
+        {
+            _basePrice = Math.Max(0, value);
+            OnPropertyChanged();
+            SaveCommand?.RaiseCanExecuteChanged();
+        }
+    }
+
+    public string Description
+    {
+        get => _description;
+        set
+        {
+            _description = value ?? "";
+            OnPropertyChanged();
+        }
+    }
+
+    public string ImagePath
+    {
+        get => _imagePath;
+        set
+        {
+            _imagePath = value ?? "";
+            OnPropertyChanged();
+        }
+    }
+
+    public MenuCategoryDisplayItem SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            _selectedCategory = value ?? Categories[0];
+            OnPropertyChanged();
+        }
+    }
+
+    public void SetMenuService(IMenuService menuService)
+    {
+        _menuService = menuService;
+    }
+
+    public void LoadItem(MenuItem item)
+    {
+        try
+        {
+            _editingItem = item;
+            _isEditMode = true;
+            
+            Name = item.Name ?? "";
+            BasePrice = item.BasePrice;
+            Description = item.Description ?? "";
+            ImagePath = item.ImagePath ?? "";
+            SelectedCategory = Categories.FirstOrDefault(c => c.Category == item.Category) ?? Categories[0];
+            
+            OnPropertyChanged(nameof(Title));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi tải thông tin món: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    public void SetCategory(MenuCategory category)
+    {
+        try
+        {
+            SelectedCategory = Categories.FirstOrDefault(c => c.Category == category) ?? Categories[0];
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi đặt loại món: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void SelectImage(object? parameter)
+    {
+        try
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Image files (*.png;*.jpg;*.jpeg;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp|All files (*.*)|*.*",
+                Title = "Chọn hình ảnh",
+                InitialDirectory = GetImagesDirectory()
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    // Validate image file
+                    var bitmap = new BitmapImage(new Uri(openFileDialog.FileName));
+                    
+                    // Copy image to Images folder if not already there
+                    var targetPath = CopyImageToAppDirectory(openFileDialog.FileName);
+                    ImagePath = targetPath;
+                    
+                    // Force UI refresh to clear cache
+                    OnPropertyChanged(nameof(ImagePath));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Không thể tải hình ảnh: {ex.Message}\nVui lòng chọn file hình ảnh hợp lệ.", 
+                                   "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi chọn ảnh: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private bool CanSave(object? parameter)
+    {
+        try
+        {
+            return !string.IsNullOrWhiteSpace(Name) && BasePrice > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void Save(object? parameter)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                MessageBox.Show("Vui lòng nhập tên món!", "Thông báo", 
+                               MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (BasePrice <= 0)
+            {
+                MessageBox.Show("Vui lòng nhập giá hợp lệ!", "Thông báo", 
+                               MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (_isEditMode && _editingItem != null)
+            {
+                // Store old image path for cleanup
+                var oldImagePath = _editingItem.ImagePath;
+                
+                // Update existing item
+                _editingItem.Name = Name.Trim();
+                _editingItem.BasePrice = BasePrice;
+                _editingItem.Description = Description.Trim();
+                _editingItem.ImagePath = ImagePath;
+                _editingItem.Category = SelectedCategory.Category;
+                
+                // Use the appropriate service (database or static data)
+                if (_menuService != null)
+                {
+                    _menuService.UpdateItem(_editingItem);
+                }
+                else
+                {
+                    // Fallback to StaticMenuData
+                    var updatedItem = new MenuItem
+                    {
+                        Id = _editingItem.Id,
+                        Name = Name.Trim(),
+                        BasePrice = BasePrice,
+                        Description = Description.Trim(),
+                        ImagePath = ImagePath,
+                        Category = SelectedCategory.Category
+                    };
+                    
+                    StaticMenuData.UpdateItem(_editingItem, updatedItem);
+                    StaticMenuData.ForceReload();
+                }
+                
+                // Clean up old image if it's different and not used by other items
+                if (!string.IsNullOrEmpty(oldImagePath) && oldImagePath != ImagePath)
+                {
+                    CleanupUnusedImage(oldImagePath);
+                }
+                
+                // Clear WPF image cache for updated images
+                ClearImageCache();
+                
+                MessageBox.Show($"Đã cập nhật '{Name}' thành công!", "Thông báo",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                // Create new item
+                var newItem = new MenuItem
+                {
+                    Name = Name.Trim(),
+                    BasePrice = BasePrice,
+                    Description = Description.Trim(),
+                    ImagePath = ImagePath,
+                    Category = SelectedCategory.Category
+                };
+
+                if (_menuService != null)
+                {
+                    _menuService.AddNewItem(newItem);
+                }
+                else
+                {
+                    StaticMenuData.AddNewItem(newItem);
+                }
+                
+                MessageBox.Show($"Đã thêm '{Name}' thành công!", "Thông báo",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            _window.DialogResult = true;
+            _window.Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi lưu món: {ex.Message}", "Lỗi",
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void Cancel(object? parameter)
+    {
+        try
+        {
+            _window.DialogResult = false;
+            _window.Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi đóng cửa sổ: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void EnsureImagesDirectoryExists()
+    {
+        try
+        {
+            var imagesDirectory = GetImagesDirectory();
+            if (!Directory.Exists(imagesDirectory))
+            {
+                Directory.CreateDirectory(imagesDirectory);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi tạo thư mục ảnh: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private string GetImagesDirectory()
+    {
+        var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        var imagesDirectory = Path.Combine(appDirectory, "Images");
+        return imagesDirectory;
+    }
+
+    private string CopyImageToAppDirectory(string sourcePath)
+    {
+        try
+        {
+            var imagesDirectory = GetImagesDirectory();
+            var fileName = Path.GetFileName(sourcePath);
+            var targetPath = Path.Combine(imagesDirectory, fileName);
+            
+            // Generate unique filename if file already exists with timestamp
+            var nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+            var extension = Path.GetExtension(fileName);
+            
+            // Always create unique filename to avoid cache issues
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            fileName = $"{nameWithoutExt}_{timestamp}{extension}";
+            targetPath = Path.Combine(imagesDirectory, fileName);
+            
+            // If source is already in Images folder, create a copy with new name
+            if (sourcePath.StartsWith(imagesDirectory))
+            {
+                try
+                {
+                    File.Copy(sourcePath, targetPath, true);
+                    return Path.Combine("Images", fileName);
+                }
+                catch
+                {
+                    return Path.Combine("Images", Path.GetFileName(sourcePath));
+                }
+            }
+            
+            try
+            {
+                // Copy file to Images folder
+                File.Copy(sourcePath, targetPath, true);
+                return Path.Combine("Images", fileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Không thể sao chép ảnh: {ex.Message}\nSử dụng đường dẫn gốc.", 
+                               "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return sourcePath; // Return original path if copy fails
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi xử lý ảnh: {ex.Message}", "Lỗi", 
+                           MessageBoxButton.OK, MessageBoxImage.Warning);
+            return sourcePath;
+        }
+    }
+
+    private void CleanupUnusedImage(string imagePath)
+    {
+        if (string.IsNullOrEmpty(imagePath) || !imagePath.StartsWith("Images"))
+            return;
+
+        try
+        {
+            var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, imagePath);
+            if (!File.Exists(fullPath))
+                return;
+
+            // Check if image is used by other items
+            List<MenuItem> allItems;
+            if (_menuService != null)
+            {
+                allItems = _menuService.GetAllItems();
+            }
+            else
+            {
+                allItems = StaticMenuData.GetAllItems();
+            }
+            
+            var isUsedByOtherItems = allItems.Any(item => 
+                item != _editingItem && 
+                !string.IsNullOrEmpty(item.ImagePath) && 
+                item.ImagePath.Equals(imagePath, StringComparison.OrdinalIgnoreCase));
+
+            if (!isUsedByOtherItems)
+            {
+                File.Delete(fullPath);
+            }
+        }
+        catch
+        {
+            // Ignore cleanup errors
+        }
+    }
+
+    private void ClearImageCache()
+    {
+        try
+        {
+            // Force garbage collection to clear WPF image cache
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+        catch
+        {
+            // Ignore cache clearing errors
+        }
+    }
+}

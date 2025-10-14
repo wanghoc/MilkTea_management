@@ -1,0 +1,29 @@
+﻿using System.Windows;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class ReceiptWindow : Window
+{
+    public string ReceiptText
+    {
+        get => ReceiptTextBlock.Text;
+        set => ReceiptTextBlock.Text = value;
+    }
+
+    public ReceiptWindow()
+    {
+        InitializeComponent();
+    }
+
+    private void Print_Click(object sender, RoutedEventArgs e)
+    {
+        // Trong thực tế sẽ gửi đến máy in
+        MessageBox.Show("Hóa đơn đã được gửi đến máy in!", "Thông báo", 
+                       MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+}

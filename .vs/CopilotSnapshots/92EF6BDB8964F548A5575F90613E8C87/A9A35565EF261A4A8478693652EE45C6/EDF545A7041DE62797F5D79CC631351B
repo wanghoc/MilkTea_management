@@ -1,0 +1,95 @@
+﻿<Window x:Class="MilkTeaShop.Presentation.AddEditItemWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:MilkTeaShop.Presentation.Converters"
+        Title="Thêm/Sửa món" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    
+    <Window.Resources>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+    </Window.Resources>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="18" FontWeight="Bold" 
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+        
+        <!-- Form -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel>
+                <!-- Category -->
+                <Label Content="Loại món:" FontWeight="Bold"/>
+                <ComboBox ItemsSource="{Binding Categories}" 
+                          SelectedItem="{Binding SelectedCategory}" 
+                          DisplayMemberPath="Name" 
+                          Margin="0,0,0,15"/>
+                
+                <!-- Name -->
+                <Label Content="Tên món:" FontWeight="Bold"/>
+                <TextBox Text="{Binding Name}" Margin="0,0,0,15" Padding="8"/>
+                
+                <!-- Price -->
+                <Label Content="Giá (đồng):" FontWeight="Bold"/>
+                <TextBox Text="{Binding BasePrice}" Margin="0,0,0,15" Padding="8"/>
+                
+                <!-- Description -->
+                <Label Content="Mô tả:" FontWeight="Bold"/>
+                <TextBox Text="{Binding Description}" Height="80" 
+                         TextWrapping="Wrap" AcceptsReturn="True" 
+                         VerticalScrollBarVisibility="Auto" 
+                         Margin="0,0,0,15" Padding="8"/>
+                
+                <!-- Image Section -->
+                <Label Content="Hình ảnh:" FontWeight="Bold"/>
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBox Grid.Column="0" Text="{Binding ImagePath}" 
+                             IsReadOnly="True" Padding="8" Margin="0,0,10,0"/>
+                    <Button Grid.Column="1" Content="Chọn ảnh" 
+                            Command="{Binding SelectImageCommand}" 
+                            Padding="15,8" Background="LightBlue"/>
+                </Grid>
+                
+                <!-- Image Preview -->
+                <Border BorderBrush="Gray" BorderThickness="1" 
+                        Width="200" Height="150" 
+                        Visibility="{Binding ImagePath, Converter={StaticResource NullToVisibilityConverter}}">
+                    <Grid>
+                        <Image Source="{Binding ImagePath}" Stretch="UniformToFill"/>
+                    </Grid>
+                </Border>
+                
+                <!-- Image Instructions -->
+                <TextBlock Text="💡 Hướng dẫn về ảnh:" FontWeight="Bold" Margin="0,20,0,5" Foreground="Blue"/>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,10" FontSize="12" Foreground="DarkBlue">
+                    • Kích thước khuyến nghị: 300x300 pixels hoặc tỷ lệ 1:1<LineBreak/>
+                    • Định dạng hỗ trợ: JPG, PNG, GIF, BMP<LineBreak/>
+                    • Dung lượng tối đa: 5MB<LineBreak/>
+                    • Nên sử dụng ảnh có chất lượng cao và rõ nét<LineBreak/>
+                    • Tạo thư mục 'Images' trong thư mục ứng dụng để lưu ảnh
+                </TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                    HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Lưu" Command="{Binding SaveCommand}" 
+                    Background="Green" Foreground="White" 
+                    Padding="20,10" Margin="0,0,10,0" FontWeight="Bold"/>
+            <Button Content="Hủy" Command="{Binding CancelCommand}" 
+                    Background="Gray" Foreground="White" 
+                    Padding="20,10"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,20 @@
+using MilkTeaShop.Domain.Patterns.State;
+
+namespace MilkTeaShop.Domain.Entities;
+
+public class Order
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public List<OrderItem> Items { get; } = new();
+    public IOrderState State { get; private set; } = new DraftState();
+    public decimal Subtotal => Items.Sum(i => i.LineTotal);
+    public decimal Discount { get; private set; } = 0m;
+    public decimal Total => Math.Max(0, Subtotal - Discount);
+
+    public void AddItem(OrderItem item) => State.AddItem(this, item);
+    public void RemoveItem(string itemId) => State.RemoveItem(this, itemId);
+    public void ApplyDiscount(decimal value) => Discount = Math.Max(0, value);
+    public void Checkout() => State.Checkout(this);
+
+    internal void SetState(IOrderState next) => State = next;
+}

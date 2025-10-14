@@ -1,0 +1,21 @@
+﻿using System.Windows;
+using MilkTeaShop.Presentation.ViewModels;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class SettingsWindow : Window
+{
+    public SettingsWindow()
+    {
+        InitializeComponent();
+        DataContext = new SettingsViewModel();
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        // Always set DialogResult = true to trigger menu refresh in MainPOSViewModel
+        // The refresh is lightweight enough that we can do it every time
+        DialogResult = true;
+        Close();
+    }
+}

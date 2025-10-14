@@ -1,0 +1,414 @@
+﻿using System.Windows;
+using MilkTeaShop.Infrastructure.Data;
+using MilkTeaShop.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+
+namespace MilkTeaShop.Presentation;
+
+public partial class DatabaseEditorWindow : Window, INotifyPropertyChanged
+{
+    public ObservableCollection<ReceiptEditModel> Receipts { get; } = new();
+    
+    private ReceiptEditModel? _selectedReceipt;
+    public ReceiptEditModel? SelectedReceipt
+    {
+        get => _selectedReceipt;
+        set
+        {
+            _selectedReceipt = value;
+            OnPropertyChanged(nameof(SelectedReceipt));
+            LoadReceiptItems();
+        }
+    }
+    
+    public ObservableCollection<ReceiptItemEditModel> ReceiptItems { get; } = new();
+
+    public DatabaseEditorWindow()
+    {
+        InitializeComponent();
+        DataContext = this;
+        LoadReceipts();
+    }
+
+    private void LoadReceipts()
+    {
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            
+            var receipts = db.Receipts
+                            .Include(r => r.Items)
+                            .OrderByDescending(r => r.PurchaseTime)
+                            .ToList();
+
+            Receipts.Clear();
+            foreach (var receipt in receipts)
+            {
+                var editModel = new ReceiptEditModel
+                {
+                    Id = receipt.Id,
+                    OrderId = receipt.OrderId,
+                    PurchaseTime = receipt.PurchaseTime,
+                    Subtotal = receipt.Subtotal,
+                    Discount = receipt.Discount,
+                    Total = receipt.Total,
+                    CustomerNote = receipt.CustomerNote,
+                    PaymentMethod = receipt.PaymentMethod,
+                    ItemCount = receipt.Items.Count,
+                    IsCorrupted = receipt.Total <= 0
+                };
+                
+                Receipts.Add(editModel);
+            }
+            
+            StatusText.Text = $"Loaded {receipts.Count} receipts";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error loading receipts: {ex.Message}", "Error", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void LoadReceiptItems()
+    {
+        ReceiptItems.Clear();
+        
+        if (SelectedReceipt == null) return;
+        
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            
+            var items = db.ReceiptItems
+                         .Where(ri => ri.ReceiptId == SelectedReceipt.Id)
+                         .ToList();
+
+            foreach (var item in items)
+            {
+                var editModel = new ReceiptItemEditModel
+                {
+                    Id = item.Id,
+                    ReceiptId = item.ReceiptId,
+                    DrinkName = item.DrinkName,
+                    Size = item.Size,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    LineTotal = item.LineTotal,
+                    SugarLevel = item.SugarLevel,
+                    IceLevel = item.IceLevel,
+                    Toppings = item.Toppings
+                };
+                
+                ReceiptItems.Add(editModel);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error loading receipt items: {ex.Message}", "Error", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void SaveReceipt_Click(object sender, RoutedEventArgs e)
+    {
+        if (SelectedReceipt == null) return;
+        
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            
+            var receipt = db.Receipts.FirstOrDefault(r => r.Id == SelectedReceipt.Id);
+            if (receipt != null)
+            {
+                receipt.Subtotal = SelectedReceipt.Subtotal;
+                receipt.Discount = SelectedReceipt.Discount;
+                receipt.Total = SelectedReceipt.Total;
+                receipt.CustomerNote = SelectedReceipt.CustomerNote;
+                receipt.PaymentMethod = SelectedReceipt.PaymentMethod;
+                
+                db.SaveChanges();
+                
+                StatusText.Text = $"Saved receipt {SelectedReceipt.Id[..8]}";
+                LoadReceipts(); // Refresh list
+                
+                MessageBox.Show("Receipt saved successfully!", "Success", 
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error saving receipt: {ex.Message}", "Error", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void AutoFixReceipt_Click(object sender, RoutedEventArgs e)
+    {
+        if (SelectedReceipt == null) return;
+        
+        try
+        {
+            using var db = new MilkTeaDbContext();
+            
+            var receipt = db.Receipts.Include(r => r.Items).FirstOrDefault(r => r.Id == SelectedReceipt.Id);
+            if (receipt != null && receipt.Items.Any())
+            {
+                var calculatedTotal = receipt.Items.Sum(i => i.LineTotal);
+                var calculatedSubtotal = calculatedTotal;
+                
+                receipt.Subtotal = calculatedSubtotal;
+                receipt.Total = calculatedTotal;
+                receipt.Discount = 0; // Reset discount
+                
+                db.SaveChanges();
+                
+                SelectedReceipt.Subtotal = calculatedSubtotal;
+                SelectedReceipt.Total = calculatedTotal;
+                SelectedReceipt.Discount = 0;
+                SelectedReceipt.IsCorrupted = false;
+                
+                StatusText.Text = $"Auto-fixed receipt {SelectedReceipt.Id[..8]} -> {calculatedTotal:N0}đ";
+                LoadReceipts(); // Refresh list
+                
+                MessageBox.Show($"Receipt auto-fixed!\nNew total: {calculatedTotal:N0}đ", "Success", 
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error auto-fixing receipt: {ex.Message}", "Error", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void DeleteReceipt_Click(object sender, RoutedEventArgs e)
+    {
+        if (SelectedReceipt == null) return;
+        
+        var result = MessageBox.Show(
+            $"Are you sure you want to delete receipt {SelectedReceipt.Id[..8]}?\nThis action cannot be undone.",
+            "Confirm Delete",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+            
+        if (result == MessageBoxResult.Yes)
+        {
+            try
+            {
+                using var db = new MilkTeaDbContext();
+                
+                var receipt = db.Receipts.Include(r => r.Items).FirstOrDefault(r => r.Id == SelectedReceipt.Id);
+                if (receipt != null)
+                {
+                    db.Receipts.Remove(receipt); // Will cascade delete items
+                    db.SaveChanges();
+                    
+                    StatusText.Text = $"Deleted receipt {SelectedReceipt.Id[..8]}";
+                    LoadReceipts(); // Refresh list
+                    
+                    MessageBox.Show("Receipt deleted successfully!", "Success", 
+                                   MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting receipt: {ex.Message}", "Error", 
+                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void FixAllCorrupted_Click(object sender, RoutedEventArgs e)
+    {
+        var corruptedCount = Receipts.Count(r => r.IsCorrupted);
+        
+        if (corruptedCount == 0)
+        {
+            MessageBox.Show("No corrupted receipts found!", "Info", 
+                           MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        
+        var result = MessageBox.Show(
+            $"Fix all {corruptedCount} corrupted receipts?\nThis will recalculate totals from receipt items.",
+            "Confirm Fix All",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+            
+        if (result == MessageBoxResult.Yes)
+        {
+            try
+            {
+                using var db = new MilkTeaDbContext();
+                
+                var corruptedReceipts = db.Receipts
+                                         .Include(r => r.Items)
+                                         .Where(r => r.Total <= 0)
+                                         .ToList();
+
+                int fixedCount = 0;
+                foreach (var receipt in corruptedReceipts)
+                {
+                    if (receipt.Items.Any())
+                    {
+                        var calculatedTotal = receipt.Items.Sum(i => i.LineTotal);
+                        receipt.Subtotal = calculatedTotal;
+                        receipt.Total = calculatedTotal;
+                        receipt.Discount = 0;
+                        fixedCount++;
+                    }
+                }
+                
+                db.SaveChanges();
+                LoadReceipts(); // Refresh list
+                
+                StatusText.Text = $"Fixed {fixedCount} corrupted receipts";
+                
+                MessageBox.Show($"Successfully fixed {fixedCount} corrupted receipts!", "Success", 
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error fixing receipts: {ex.Message}", "Error", 
+                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void OpenDatabaseFile_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dbPath = MilkTeaDbContext.GetDatabasePath();
+            
+            var result = MessageBox.Show(
+                "Chọn cách mở database:\n\n" +
+                "YES: Thử mở với DB Browser for SQLite (khuyến nghị)\n" +
+                "NO: Chỉ mở folder chứa file database\n" +
+                "CANCEL: Xem hướng dẫn chi tiết",
+                "Mở Database File",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            switch (result)
+            {
+                case MessageBoxResult.Yes:
+                    MilkTeaShop.Presentation.Helpers.DatabaseHelper.OpenWithDBBrowser(dbPath);
+                    StatusText.Text = "Attempted to open with DB Browser for SQLite";
+                    break;
+                    
+                case MessageBoxResult.No:
+                    var dbFolder = System.IO.Path.GetDirectoryName(dbPath);
+                    if (System.IO.Directory.Exists(dbFolder))
+                    {
+                        System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{dbPath}\"");
+                        StatusText.Text = $"Opened database folder: {dbFolder}";
+                    }
+                    break;
+                    
+                case MessageBoxResult.Cancel:
+                    MilkTeaShop.Presentation.Helpers.DatabaseHelper.ShowDatabaseInstructions();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error opening database file: {ex.Message}", "Error", 
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        LoadReceipts();
+        StatusText.Text = "Refreshed data";
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected virtual void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public class ReceiptEditModel : INotifyPropertyChanged
+{
+    public string Id { get; set; } = "";
+    public string OrderId { get; set; } = "";
+    public DateTime PurchaseTime { get; set; }
+    
+    private decimal _subtotal;
+    public decimal Subtotal
+    {
+        get => _subtotal;
+        set { _subtotal = value; OnPropertyChanged(nameof(Subtotal)); }
+    }
+    
+    private decimal _discount;
+    public decimal Discount
+    {
+        get => _discount;
+        set { _discount = value; OnPropertyChanged(nameof(Discount)); }
+    }
+    
+    private decimal _total;
+    public decimal Total
+    {
+        get => _total;
+        set { _total = value; OnPropertyChanged(nameof(Total)); }
+    }
+    
+    private string _customerNote = "";
+    public string CustomerNote
+    {
+        get => _customerNote;
+        set { _customerNote = value; OnPropertyChanged(nameof(CustomerNote)); }
+    }
+    
+    private string _paymentMethod = "";
+    public string PaymentMethod
+    {
+        get => _paymentMethod;
+        set { _paymentMethod = value; OnPropertyChanged(nameof(PaymentMethod)); }
+    }
+    
+    public int ItemCount { get; set; }
+    public bool IsCorrupted { get; set; }
+    
+    // Display properties
+    public string ShortId => Id.Length > 8 ? Id[..8] : Id;
+    public string PurchaseTimeString => PurchaseTime.ToString("dd/MM/yyyy HH:mm:ss");
+    public string TotalString => $"{Total:N0}đ";
+    public string StatusString => IsCorrupted ? "🚨 CORRUPT" : "✅ OK";
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected virtual void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public class ReceiptItemEditModel
+{
+    public string Id { get; set; } = "";
+    public string ReceiptId { get; set; } = "";
+    public string DrinkName { get; set; } = "";
+    public string Size { get; set; } = "";
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal LineTotal { get; set; }
+    public string SugarLevel { get; set; } = "";
+    public string IceLevel { get; set; } = "";
+    public string Toppings { get; set; } = "";
+    
+    public string UnitPriceString => $"{UnitPrice:N0}đ";
+    public string LineTotalString => $"{LineTotal:N0}đ";
+}

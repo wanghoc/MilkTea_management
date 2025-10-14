@@ -1,0 +1,91 @@
+﻿using MilkTeaShop.Application.Services;
+using MilkTeaShop.Domain.Entities; 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace MilkTeaShop.Infrastructure.Services
+{
+    public class InMemoryUserService : IUserService
+    {
+        private static readonly List<User> _users = new()
+        {
+            new User { Id = 1, Username = "admin", Password = "admin123", FullName = "Quản trị viên", Role = UserRole.Admin, IsActive = true },
+            new User { Id = 2, Username = "manager", Password = "manager123", FullName = "Quản lý cửa hàng", Role = UserRole.Manager, IsActive = true },
+            new User { Id = 3, Username = "employee", Password = "emp123", FullName = "Nhân viên bán hàng", Role = UserRole.Employee, IsActive = true }
+        };
+
+        private static int _nextId = 4;
+
+        public Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return Task.FromResult(_users.AsEnumerable());
+        }
+
+        public Task<User?> GetUserByIdAsync(int id)
+        {
+            var user = _users.FirstOrDefault(u => u.Id == id);
+            return Task.FromResult(user);
+        }
+
+        public Task<User?> AuthenticateAsync(string username, string password)
+        {
+            var user = _users.FirstOrDefault(u => 
+                u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) && 
+                u.Password == password && 
+                u.IsActive);
+            return Task.FromResult(user);
+        }
+
+        public Task<User> CreateUserAsync(User user)
+        {
+            user.Id = _nextId++;
+            user.CreatedDate = DateTime.Now;
+            _users.Add(user);
+            return Task.FromResult(user);
+        }
+
+        public Task<User> UpdateUserAsync(User user)
+        {
+            var existingUser = _users.FirstOrDefault(u => u.Id == user.Id);
+            if (existingUser != null)
+            {
+                existingUser.Username = user.Username;
+                existingUser.FullName = user.FullName;
+                existingUser.Role = user.Role;
+                existingUser.IsActive = user.IsActive;
+                // Don't update password here - use ChangePasswordAsync for that
+            }
+            return Task.FromResult(existingUser ?? user);
+        }
+
+        public Task<bool> DeleteUserAsync(int id)
+        {
+            var user = _users.FirstOrDefault(u => u.Id == id);
+            if (user != null)
+            {
+                user.IsActive = false; // Soft delete
+                return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
+        }
+
+        public Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            var user = _users.FirstOrDefault(u => u.Id == userId);
+            if (user != null && user.Password == currentPassword)
+            {
+                user.Password = newPassword;
+                return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
+        }
+
+        public Task<bool> IsUsernameAvailableAsync(string username)
+        {
+            var exists = _users.Any(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) && u.IsActive);
+            return Task.FromResult(!exists);
+        }
+    }
+}

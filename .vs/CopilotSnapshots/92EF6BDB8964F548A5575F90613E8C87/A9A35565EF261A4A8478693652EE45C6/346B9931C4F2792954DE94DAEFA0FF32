@@ -1,0 +1,298 @@
+﻿using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
+using Microsoft.Win32;
+using System.Windows.Media.Imaging;
+using MilkTeaShop.Domain.Entities;
+using MilkTeaShop.Domain.ValueObjects;
+using MilkTeaShop.Application.Services;
+using MilkTeaShop.Domain.Data;
+using MilkTeaShop.Presentation.Models;
+
+namespace MilkTeaShop.Presentation.ViewModels;
+
+public class AddEditItemViewModel : BaseViewModel
+{
+    private readonly Window _window;
+    private readonly IMenuService _menuService;
+    private MenuItem? _editingItem;
+    private bool _isEditMode;
+
+    private string _name = "";
+    private decimal _basePrice;
+    private string _description = "";
+    private string _imagePath = "";
+    private MenuCategoryDisplayItem _selectedCategory;
+
+    public ObservableCollection<MenuCategoryDisplayItem> Categories { get; } = new()
+    {
+        new MenuCategoryDisplayItem(MenuCategory.MilkTea),
+        new MenuCategoryDisplayItem(MenuCategory.Topping)
+    };
+
+    public RelayCommand SelectImageCommand { get; }
+    public RelayCommand SaveCommand { get; }
+    public RelayCommand CancelCommand { get; }
+
+    public AddEditItemViewModel(Window window)
+    {
+        _window = window;
+        _menuService = new MenuService();
+        _selectedCategory = Categories[0]; // Default to MilkTea
+        
+        SelectImageCommand = new RelayCommand(SelectImage);
+        SaveCommand = new RelayCommand(Save, CanSave);
+        CancelCommand = new RelayCommand(Cancel);
+        
+        // Create Images directory if it doesn't exist
+        EnsureImagesDirectoryExists();
+    }
+
+    public string Title => _isEditMode ? "Chỉnh sửa món" : "Thêm món mới";
+
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            _name = value;
+            OnPropertyChanged();
+            SaveCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    public decimal BasePrice
+    {
+        get => _basePrice;
+        set
+        {
+            _basePrice = value;
+            OnPropertyChanged();
+            SaveCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    public string Description
+    {
+        get => _description;
+        set
+        {
+            _description = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string ImagePath
+    {
+        get => _imagePath;
+        set
+        {
+            _imagePath = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public MenuCategoryDisplayItem SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            _selectedCategory = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public void LoadItem(MenuItem item)
+    {
+        _editingItem = item;
+        _isEditMode = true;
+        
+        Name = item.Name;
+        BasePrice = item.BasePrice;
+        Description = item.Description ?? "";
+        ImagePath = item.ImagePath ?? "";
+        SelectedCategory = Categories.FirstOrDefault(c => c.Category == item.Category) ?? Categories[0];
+        
+        OnPropertyChanged(nameof(Title));
+    }
+
+    public void SetCategory(MenuCategory category)
+    {
+        SelectedCategory = Categories.FirstOrDefault(c => c.Category == category) ?? Categories[0];
+    }
+
+    private void SelectImage(object? parameter)
+    {
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "Image files (*.png;*.jpg;*.jpeg;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp|All files (*.*)|*.*",
+            Title = "Chọn hình ảnh",
+            InitialDirectory = GetImagesDirectory()
+        };
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                // Validate image file
+                var bitmap = new BitmapImage(new Uri(openFileDialog.FileName));
+                
+                // Copy image to Images folder if not already there
+                var targetPath = CopyImageToAppDirectory(openFileDialog.FileName);
+                ImagePath = targetPath;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Không thể tải hình ảnh: {ex.Message}\nVui lòng chọn file hình ảnh hợp lệ.", 
+                               "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+    }
+
+    private bool CanSave(object? parameter)
+    {
+        return !string.IsNullOrWhiteSpace(Name) && BasePrice > 0;
+    }
+
+    private void Save(object? parameter)
+    {
+        try
+        {
+            if (_isEditMode && _editingItem != null)
+            {
+                // Store old image path for cleanup
+                var oldImagePath = _editingItem.ImagePath;
+                
+                // Update existing item
+                _editingItem.Name = Name.Trim();
+                _editingItem.BasePrice = BasePrice;
+                _editingItem.Description = Description.Trim();
+                _editingItem.ImagePath = ImagePath;
+                _editingItem.Category = SelectedCategory.Category;
+                
+                // Clean up old image if it's different and not used by other items
+                if (!string.IsNullOrEmpty(oldImagePath) && oldImagePath != ImagePath)
+                {
+                    CleanupUnusedImage(oldImagePath);
+                }
+                
+                MessageBox.Show($"Đã cập nhật '{Name}' thành công!", "Thông báo",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                // Create new item
+                var newItem = new MenuItem
+                {
+                    Name = Name.Trim(),
+                    BasePrice = BasePrice,
+                    Description = Description.Trim(),
+                    ImagePath = ImagePath,
+                    Category = SelectedCategory.Category
+                };
+
+                StaticMenuData.AddNewItem(newItem);
+                
+                MessageBox.Show($"Đã thêm '{Name}' thành công!", "Thông báo",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            _window.DialogResult = true;
+            _window.Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi lưu món: {ex.Message}", "Lỗi",
+                           MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void Cancel(object? parameter)
+    {
+        _window.DialogResult = false;
+        _window.Close();
+    }
+
+    private void EnsureImagesDirectoryExists()
+    {
+        var imagesDirectory = GetImagesDirectory();
+        if (!Directory.Exists(imagesDirectory))
+        {
+            Directory.CreateDirectory(imagesDirectory);
+        }
+    }
+
+    private string GetImagesDirectory()
+    {
+        var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        var imagesDirectory = Path.Combine(appDirectory, "Images");
+        return imagesDirectory;
+    }
+
+    private string CopyImageToAppDirectory(string sourcePath)
+    {
+        var imagesDirectory = GetImagesDirectory();
+        var fileName = Path.GetFileName(sourcePath);
+        var targetPath = Path.Combine(imagesDirectory, fileName);
+        
+        // Generate unique filename if file already exists
+        var counter = 1;
+        var nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+        var extension = Path.GetExtension(fileName);
+        
+        while (File.Exists(targetPath))
+        {
+            fileName = $"{nameWithoutExt}_{counter}{extension}";
+            targetPath = Path.Combine(imagesDirectory, fileName);
+            counter++;
+        }
+        
+        // If source is already in Images folder, return relative path
+        if (sourcePath.StartsWith(imagesDirectory))
+        {
+            return Path.Combine("Images", Path.GetFileName(sourcePath));
+        }
+        
+        try
+        {
+            // Copy file to Images folder
+            File.Copy(sourcePath, targetPath, false);
+            return Path.Combine("Images", fileName);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Không thể sao chép ảnh: {ex.Message}\nSử dụng đường dẫn gốc.", 
+                           "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return sourcePath; // Return original path if copy fails
+        }
+    }
+
+    private void CleanupUnusedImage(string imagePath)
+    {
+        if (string.IsNullOrEmpty(imagePath) || !imagePath.StartsWith("Images"))
+            return;
+
+        try
+        {
+            var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, imagePath);
+            if (!File.Exists(fullPath))
+                return;
+
+            // Check if image is used by other items
+            var allItems = StaticMenuData.GetAllItems();
+            var isUsedByOtherItems = allItems.Any(item => 
+                item != _editingItem && 
+                !string.IsNullOrEmpty(item.ImagePath) && 
+                item.ImagePath.Equals(imagePath, StringComparison.OrdinalIgnoreCase));
+
+            if (!isUsedByOtherItems)
+            {
+                File.Delete(fullPath);
+            }
+        }
+        catch
+        {
+            // Ignore cleanup errors
+        }
+    }
+}
