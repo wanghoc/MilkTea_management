@@ -60,7 +60,7 @@ namespace MilkTeaShop.Presentation {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/MilkTeaShop.Presentation;V1.0.0.0;component/usermanagementwindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/MilkTeaShop.Presentation;component/usermanagementwindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\UserManagementWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

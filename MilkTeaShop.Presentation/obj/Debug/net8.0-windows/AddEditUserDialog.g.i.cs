@@ -92,7 +92,7 @@ namespace MilkTeaShop.Presentation {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/MilkTeaShop.Presentation;V1.0.0.0;component/addedituserdialog.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/MilkTeaShop.Presentation;component/addedituserdialog.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\AddEditUserDialog.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

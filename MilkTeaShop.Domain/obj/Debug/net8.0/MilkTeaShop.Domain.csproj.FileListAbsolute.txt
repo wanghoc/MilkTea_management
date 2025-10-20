@@ -55,3 +55,15 @@ D:\Design pattern\MilkTea_management-master\MilkTeaShop.Domain\obj\Debug\net8.0\
 D:\Design pattern\MilkTea_management-master\MilkTeaShop.Domain\obj\Debug\net8.0\refint\MilkTeaShop.Domain.dll
 D:\Design pattern\MilkTea_management-master\MilkTeaShop.Domain\obj\Debug\net8.0\MilkTeaShop.Domain.pdb
 D:\Design pattern\MilkTea_management-master\MilkTeaShop.Domain\obj\Debug\net8.0\ref\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\bin\Debug\net8.0\MilkTeaShop.Domain.deps.json
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\bin\Debug\net8.0\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\bin\Debug\net8.0\MilkTeaShop.Domain.pdb
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\MilkTeaShop.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\MilkTeaShop.Domain.AssemblyInfoInputs.cache
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\MilkTeaShop.Domain.AssemblyInfo.cs
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\MilkTeaShop.Domain.csproj.CoreCompileInputs.cache
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\MilkTeaShop.Domain.sourcelink.json
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\refint\MilkTeaShop.Domain.dll
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\MilkTeaShop.Domain.pdb
+D:\Design pattern\MilkTea_management\MilkTeaShop.Domain\obj\Debug\net8.0\ref\MilkTeaShop.Domain.dll
